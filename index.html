@@ -1,0 +1,799 @@
+<title>事件小本本</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap">
+<style>
+/* 布局：标题 → 吸顶的一条黑板（搜索 + 记录/话术切换）→ 卡片或话术。
+   「记一笔」整页切过去（不弹层、不原地展开），「存」在顶栏；返回也会存。
+   短选项一律一排横着滑。只有一层吸顶。 */
+:root {
+  --paper: #f1f4ee;
+  --card: #ffffff;
+  --ink: #22302a;
+  --ink2: #5a6961;
+  --line: #dbe3d8;
+  --board: #2c4437;
+  --board2: #3b5747;
+  --chalk: #f6f3e8;
+  --chalk2: #c6d4c9;
+  --pink: #c2416a;
+  --on-pink: #ffffff;
+  --pink-soft: #fbe3ea;
+  --pink-ink: #a8345a;
+  --yellow: #805a0b;
+  --yellow-soft: #f8edcf;
+  --warn: #a3401c;
+  --on-warn: #ffffff;
+  --warn-soft: #fae0d5;
+  --good: #326a47;
+  --good-soft: #def0e3;
+  --shadow: 0 1px 2px rgba(34, 48, 42, .06), 0 6px 18px rgba(34, 48, 42, .07);
+  --font-display: "ZCOOL KuaiLe", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --r: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #141c17; --card: #1d2822; --ink: #e6ede7; --ink2: #a1b0a6; --line: #2f3d35;
+    --board: #1f3127; --board2: #2e4437; --chalk: #f0ede2; --chalk2: #a9bbad;
+    --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
+    --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
+    --good: #87c69b; --good-soft: #1d3125;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #141c17; --card: #1d2822; --ink: #e6ede7; --ink2: #a1b0a6; --line: #2f3d35;
+  --board: #1f3127; --board2: #2e4437; --chalk: #f0ede2; --chalk2: #a9bbad;
+  --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
+  --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
+  --good: #87c69b; --good-soft: #1d3125;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--board); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 680px; margin-left: auto; margin-right: auto; }
+
+/* ---------- 首页顶部 ---------- */
+.top { background: var(--board); color: var(--chalk); padding-top: calc(14px + env(safe-area-inset-top, 0px)); padding-bottom: 2px; }
+.top .wrap { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.top h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: .04em; line-height: 1.25; }
+.top .sub { margin: 0; color: var(--chalk2); font-size: 12.5px; white-space: nowrap; }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--board); padding-top: 8px; padding-bottom: 12px; border-radius: 0 0 22px 22px; box-shadow: 0 6px 16px rgba(20, 35, 27, .16); }
+.bar-in { display: flex; gap: 8px; align-items: center; }
+.search { flex: 1 1 auto; min-width: 0; height: 40px; border-radius: 999px; border: 1.5px solid transparent; background: var(--board2); color: var(--chalk); padding: 0 14px; font: inherit; font-size: 16px; -webkit-appearance: none; appearance: none; }
+.search::placeholder { color: var(--chalk2); opacity: 1; }
+.search:focus { outline: none; border-color: var(--chalk2); }
+.seg { flex: none; display: flex; gap: 2px; background: var(--board2); border-radius: 999px; padding: 3px; }
+.seg button { height: 34px; padding: 0 13px; border-radius: 999px; color: var(--chalk2); font-weight: 600; font-size: 14.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.seg button[aria-pressed="true"] { background: var(--chalk); color: var(--board); }
+
+main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- 一排横着滑的短选项 ---------- */
+.chips {
+  display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px)));
+  margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding: 2px calc(28px + env(safe-area-inset-right, 0px)) 6px max(16px, env(safe-area-inset-left, 0px));
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; height: 34px; padding: 0 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink2); font-size: 14px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.count { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 5px; font-weight: 500; }
+.chip-sub { font-weight: 500; opacity: .8; margin-left: 4px; }
+.chip-note { flex: none; height: 34px; display: inline-flex; align-items: center; color: var(--ink2); font-size: 13.5px; }
+
+/* ---------- 卡片 ---------- */
+.list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+.card { position: relative; display: block; width: 100%; text-align: left; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 16px 14px 18px; transition: transform .12s ease; }
+.card:active { transform: scale(.985); }
+.card::before, .who-box::before, .suggest::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 0 4px 4px 0; background: var(--lv, var(--line)); }
+.lv1 { --lv: var(--line); }
+.lv2 { --lv: var(--yellow); }
+.lv3 { --lv: var(--warn); }
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.card-name { margin-top: 1px; font-size: 18px; font-weight: 700; letter-spacing: .02em; }
+.card-what { margin: 4px 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-did { margin: 3px 0 0; color: var(--ink2); font-size: 13.5px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.tag { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--paper); color: var(--ink2); white-space: nowrap; }
+.tag.n2 { background: var(--yellow-soft); color: var(--yellow); }
+.tag.n3 { background: var(--warn-soft); color: var(--warn); }
+.tag.done { background: var(--good-soft); color: var(--good); }
+.tag.open { background: var(--pink-soft); color: var(--pink-ink); }
+
+.who-box { position: relative; margin-top: 10px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 16px 12px 18px; }
+.who-name { display: flex; align-items: baseline; gap: 8px; }
+.who-name b { font-size: 18px; }
+.who-name span, .who-line { color: var(--ink2); font-size: 13.5px; }
+.who-next { margin-top: 4px; font-weight: 600; font-size: 14px; }
+
+.empty { margin-top: 24px; text-align: center; color: var(--ink2); padding: 28px 18px; border: 1.5px dashed var(--line); border-radius: var(--r); }
+.empty .big { font-family: var(--font-display); font-size: 22px; color: var(--ink); margin-bottom: 6px; }
+.notice { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--yellow-soft); color: var(--yellow); font-size: 14px; font-weight: 600; }
+
+.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(194, 65, 106, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
+.fab:active { transform: scale(.96); }
+
+/* ---------- 话术页 ---------- */
+.sec { margin-top: 18px; }
+.sec:first-child { margin-top: 4px; }
+.sec h2 { margin: 0 0 8px; font-size: 17px; letter-spacing: .02em; }
+.lead { margin: -2px 0 10px; color: var(--ink2); font-size: 14px; }
+.box { background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; }
+.rules { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 6px; }
+.say-row { display: grid; grid-template-columns: 6.8em minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 9px 0; border-top: 1px solid var(--line); }
+.say-row:first-child { border-top: 0; padding-top: 0; }
+.say-row:last-child { padding-bottom: 0; }
+.say-row .when { color: var(--ink2); font-size: 13.5px; }
+.say-row .words { font-weight: 600; }
+.lvl { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
+.lvl:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+.lvl-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14.5px; flex-wrap: wrap; }
+.lvl ol, .suggest ol { margin: 6px 0 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
+.quote { margin-top: 8px; background: var(--pink-soft); color: var(--ink); border-radius: 12px; padding: 8px 12px; font-weight: 600; font-size: 14.5px; }
+.quote.msg { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--paper); border: 1px dashed var(--line); }
+.quote.msg > div { min-width: 0; }
+.quote-k { font-size: 12px; color: var(--ink2); font-weight: 600; }
+.copy { flex: none; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink2); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.stepper { flex: none; display: inline-flex; align-items: center; gap: 4px; background: var(--paper); border-radius: 999px; padding: 3px; }
+.stepper button { width: 34px; height: 34px; border-radius: 50%; font-size: 18px; font-weight: 700; color: var(--ink); }
+.stepper button:disabled { opacity: .3; cursor: default; }
+.stepper output { min-width: 2em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fine { color: var(--ink2); font-size: 13px; margin-top: 10px; }
+
+/* ---------- 记一笔（整页） ---------- */
+.formbar { position: sticky; top: 0; z-index: 20; background: var(--board); color: var(--chalk); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
+.formbar-in { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.formbar h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 21px; letter-spacing: .04em; }
+.back { justify-self: start; height: 36px; padding: 0 10px 0 2px; color: var(--chalk2); font-weight: 600; }
+.save { justify-self: end; height: 36px; padding: 0 20px; border-radius: 999px; background: var(--chalk); color: var(--board); font-weight: 700; }
+.save:disabled { opacity: .55; }
+.field { margin-top: 16px; }
+.field > label, .field > .label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+.hint { color: var(--ink2); font-weight: 500; font-size: 12.5px; margin-left: 6px; }
+.input, .ta { width: 100%; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); border-radius: 14px; padding: 10px 14px; font: inherit; font-size: 16px; -webkit-appearance: none; appearance: none; }
+.input { height: 46px; }
+.input[type="date"] { display: flex; align-items: center; line-height: 24px; }
+.input::-webkit-date-and-time-value { text-align: left; }
+.ta { display: block; min-height: 76px; resize: none; line-height: 1.6; overflow: hidden; }
+.input:focus, .ta:focus { outline: none; border-color: var(--pink); }
+.input::placeholder, .ta::placeholder { color: var(--ink2); opacity: .75; }
+.stu-chips { margin-top: 8px; min-height: 42px; }
+.suggest { position: relative; margin-top: 16px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 13px 16px 14px 18px; }
+.suggest .who { font-size: 13px; color: var(--ink2); }
+.suggest .what { font-weight: 700; font-size: 16px; margin-top: 1px; }
+.suggest-empty { margin-top: 16px; color: var(--ink2); font-size: 13.5px; padding: 12px 14px; border: 1.5px dashed var(--line); border-radius: 14px; }
+.field > label.switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 0; font-weight: 400; font-size: 15px; background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 14px; cursor: pointer; }
+.switch .fine { margin-top: 0; }
+.switch input { appearance: none; -webkit-appearance: none; margin: 0; width: 50px; height: 30px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; flex: none; transition: background .2s ease; }
+.switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s ease; }
+.switch input:checked { background: var(--good); }
+.switch input:checked::after { transform: translateX(20px); }
+.danger { margin-top: 26px; width: 100%; height: 46px; border-radius: 14px; border: 1.5px solid var(--line); color: var(--warn); font-weight: 700; background: var(--card); }
+.danger.armed { background: var(--warn); border-color: var(--warn); color: var(--on-warn); }
+
+.toast { position: fixed; z-index: 40; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 16px; font-size: 14px; font-weight: 600; text-align: center; box-shadow: var(--shadow); }
+.toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div id="app"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- 话术：每种情况 × 第几次（say = 当面说，msg = 发给班主任） ---------- */
+  var TYPES = [
+    { key: 'class', name: '上课说话、小动作', lv: {
+      1: { title: '当场处理，不吵', steps: ['停下来，看着他，等三秒，不说话。', '还不停：走到他旁边站着，接着讲。', '还不停：点名，记下名字，下课再说。'], say: '{名}，先停一下。' },
+      2: { title: '下课单独说一次', steps: ['下课叫住他，就在座位边说，一分钟。', '只说要求，不讲道理，不翻旧账。'], say: '{名}，这是第 {N} 次了。下节课你要做的是：认真听，不说话。' },
+      3: { title: '交给班主任一起管', steps: ['课上还是照第一次那样处理，不当场吵。', '下课把名字和次数发给班主任。', '发出去，这件事在我这儿就结束了。'], msg: '{名}这段时间上课第 {N} 次说话了，麻烦你一起管一下。' }
+    } },
+    { key: 'homework', name: '作业没交、没订正', lv: {
+      1: { title: '记名字，定补交时间', steps: ['记下名字。', '告诉他什么时候前补上。'], say: '{名}，明天早上上课前补交给我。' },
+      2: { title: '补交单独一摞，上课先点他', steps: ['早上补交的单独放一摞。', '上课提问，先点这些人。'], say: '{名}，第 {N} 次了。明早补交，上课我先提问你。' },
+      3: { title: '交给班主任', steps: ['把名字和次数发给班主任。', '发出去，这件事在我这儿就结束了。'], msg: '{名}作业已经第 {N} 次没交了，麻烦你跟他说一下。' }
+    } },
+    { key: 'nocome', name: '叫了不来', lv: {
+      1: { title: '不隔空叫，直接去带', steps: ['下课直接走到他座位边。', '说一句，带着他一起走。'], say: '{名}，走，跟我去一趟。' },
+      2: { title: '不追了，就在座位边说完', steps: ['不再叫他去办公室，也不等他来。', '下次见到他，在座位边一分钟说完要求。', '说完就走，不等他回应。'], say: '{名}，我就在这儿说一句：____。说完了。' },
+      3: { title: '交给班主任', steps: ['不再自己叫。', '把名字和事情发给班主任，到这儿结束。'], msg: '{名}叫了几次都不来，麻烦你处理一下。' }
+    } },
+    { key: 'talkback', name: '顶嘴、找理由', lv: {
+      1: { title: '只说一句，翻来覆去说', steps: ['他说什么都不接，只重复这一句。', '说了三遍还不动：「这事下课再说。」接着上课。', '不问「为什么」，不等他道歉。'], say: '我听到了。你要做的是 ____。' },
+      2: { title: '下课单独说，五分钟收', steps: ['只说要求和结果，不辩论。', '五分钟内结束：「行，就到这儿。」'], say: '我不跟你争。你要做的是 ____。' },
+      3: { title: '交给班主任，转身走', steps: ['不进他的辩论，说完这句就走。', '回头把事情发给班主任，到这儿结束。'], say: '这事我交给班主任。', msg: '{名}上课顶嘴，这是第 {N} 次了，麻烦你处理一下。' }
+    } },
+    { key: 'other', name: '其他', lv: {
+      1: { title: '先记下来，下课再说', steps: ['当场不处理，先记下来。', '下课只说要求，不讲道理。'], say: '这事下课再说。' },
+      2: { title: '下课单独说一次', steps: ['只说要求和结果，一分钟。'], say: '{名}，你要做的是 ____。' },
+      3: { title: '交给班主任', steps: ['把事情和次数发给班主任，到这儿结束。'], msg: '{名}这是第 {N} 次了：____，麻烦你处理一下。' }
+    } }
+  ];
+  var SAYINGS = [
+    ['打断他', '先停一下。'],
+    ['说要求', '你现在要做的是 ____。'],
+    ['他顶嘴、找理由', '我听到了。你要做的是 ____。'],
+    ['三遍还不动', '这事下课再说。'],
+    ['收尾', '行，就到这儿。回去吧。'],
+    ['自己急了', '这事下课再说。']
+  ];
+  var DEFAULT_CLASSES = ['1班', '2班', '3班'];
+
+  /* ---------- 状态 ---------- */
+  var S = {
+    db: null, dbState: 'loading', canWrite: true, items: [], escalateAt: 3,
+    view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
+    form: null, formInit: '', saving: false, backArmed: false, delArmed: false
+  };
+  var app = document.getElementById('app');
+  var refs = {};
+
+  function h(tag, attrs, kids) {
+    var el = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v == null || v === false) return;
+      if (k === 'text') el.textContent = v;
+      else if (k === 'class') el.className = v;
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) { if (c != null && c !== false) el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return el;
+  }
+
+  /* ---------- 小工具 ---------- */
+  function norm(s) { return String(s || '').trim().replace(/\s+/g, ' '); }
+  function typeOf(key) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i].key === key) return TYPES[i]; return TYPES[TYPES.length - 1]; }
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function ymd(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+  function today() { return ymd(new Date()); }
+  function nice(date) {
+    if (!date) return '';
+    if (date === today()) return '今天';
+    var y = new Date(); y.setDate(y.getDate() - 1);
+    if (date === ymd(y)) return '昨天';
+    var p = date.split('-'), d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var s = (+p[1]) + '月' + (+p[2]) + '日 · 周' + '日一二三四五六'.charAt(d.getDay());
+    return +p[0] === new Date().getFullYear() ? s : p[0] + '年' + s;
+  }
+  function sortKey(date, createdAt) { return (date || '') + '|' + String(createdAt || 0).padStart(15, '0'); }
+  function itemKey(it) { return sortKey(it.date, it.createdAt); }
+  /* 同一个名字、排在 key 之前的有几条，+1 就是这一条是第几次 */
+  function countBefore(name, key, excludeId) {
+    var nm = norm(name), n = 1;
+    S.items.forEach(function (o) { if (o.id !== excludeId && norm(o.student) === nm && itemKey(o) < key) n++; });
+    return n;
+  }
+  function nth(it) { return countBefore(it.student, itemKey(it), it.id); }
+  function level(n) { return n >= S.escalateAt ? 3 : (n >= 2 ? 2 : 1); }
+  function fill(s, name, n) { return s.replace(/\{名\}/g, name || 'XX').replace(/\{N\}/g, String(n)); }
+  function lvLabel(l) {
+    var E = S.escalateAt;
+    if (l === 1) return '第 1 次';
+    if (l === 2) return E - 1 === 2 ? '第 2 次' : '第 2–' + (E - 1) + ' 次';
+    return '第 ' + E + ' 次起';
+  }
+  function classes() {
+    var set = DEFAULT_CLASSES.slice();
+    S.items.forEach(function (it) { if (it.cls && it.cls !== '其他' && set.indexOf(it.cls) < 0) set.push(it.cls); });
+    return set;
+  }
+  function students() {
+    var map = {};
+    S.items.forEach(function (it) {
+      var nm = norm(it.student); if (!nm) return;
+      var k = itemKey(it), m = map[nm] || (map[nm] = { name: nm, cls: '', count: 0, last: '', lastDate: '' });
+      m.count++;
+      if (k > m.last) { m.last = k; m.lastDate = it.date; if (it.cls) m.cls = it.cls; }
+      else if (!m.cls && it.cls) m.cls = it.cls;
+    });
+    return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return a.last < b.last ? 1 : -1; });
+  }
+  function newestFirst(a, b) { return itemKey(a) < itemKey(b) ? 1 : -1; }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var old = document.querySelector('.toast'); if (old) old.remove();
+    var t = h('div', { class: 'toast' + (S.view === 'form' ? ' at-top' : ''), role: 'status', text: msg });
+    document.body.appendChild(t);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, 2600);
+  }
+  function copy(text, btn) {
+    function done() { var o = btn.textContent; btn.textContent = '复制好了'; setTimeout(function () { btn.textContent = o; }, 1400); }
+    function fallback() {
+      var ta = h('textarea', { 'aria-hidden': 'true', readonly: true }); ta.value = text;
+      ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0'; document.body.appendChild(ta);
+      ta.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      ta.remove(); if (ok) done(); else toast('复制不了，长按文字自己选一下');
+    }
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  }
+  function retry(fn) {
+    return fn().catch(function (e) {
+      if (e && e.code === 'unavailable') return new Promise(function (r) { setTimeout(r, 400 + Math.random() * 600); }).then(fn);
+      throw e;
+    });
+  }
+  function errText(e) {
+    var c = e && e.code;
+    if (c === 'quota_exceeded') return '本子满了，删掉一些旧的再存';
+    if (c === 'invalid_argument' || c === 'not_granted' || c === 'revoked') return '存不了：这本子只有主人能记';
+    return '没存上，网络不好，等一下再点一次';
+  }
+  function keepScrollLeft(row, build) { var sl = row.scrollLeft; row.textContent = ''; build(); row.scrollLeft = sl; }
+
+  /* ---------- 首页：顶部只建一次，打字时不重建搜索框 ---------- */
+  function mountHome() {
+    S.view = 'home'; refs = {};
+    app.textContent = '';
+    var search = h('input', { class: 'search', type: 'search', autocomplete: 'off', enterkeyhint: 'search', 'aria-label': '搜索' });
+    search.value = S.q;
+    search.addEventListener('input', function () { S.q = search.value; renderMain(); });
+    search.addEventListener('keydown', function (e) { if (e.key === 'Enter') search.blur(); });
+    refs.search = search;
+    refs.tabRec = h('button', { type: 'button', onclick: function () { switchTab('records'); } });
+    refs.tabScr = h('button', { type: 'button', onclick: function () { switchTab('scripts'); }, text: '话术' });
+    app.appendChild(h('header', { class: 'top gutter' }, [h('div', { class: 'wrap' }, [h('h1', { text: '事件小本本' }), h('p', { class: 'sub', text: '遇事记一笔，话术自动套' })])]));
+    app.appendChild(h('div', { class: 'bar gutter' }, [h('div', { class: 'wrap bar-in' }, [search, h('div', { class: 'seg', role: 'group', 'aria-label': '切换' }, [refs.tabRec, refs.tabScr])])]));
+    refs.main = h('div', { class: 'wrap' });
+    app.appendChild(h('main', { class: 'gutter' }, [refs.main]));
+    refs.fab = h('button', { class: 'fab', type: 'button', onclick: function () { openForm(null); }, text: '＋ 记一笔' });
+    app.appendChild(refs.fab);
+    syncHeader(); renderMain();
+  }
+  function switchTab(t) {
+    if (S.tab === t) return;
+    S.scroll[S.tab] = window.scrollY;
+    S.tab = t; S.q = ''; refs.search.value = '';
+    syncHeader(); renderMain();
+    window.scrollTo(0, S.scroll[t] || 0);
+  }
+  function syncHeader() {
+    refs.tabRec.textContent = '记录' + (S.items.length ? ' ' + S.items.length : '');
+    refs.tabRec.setAttribute('aria-pressed', String(S.tab === 'records'));
+    refs.tabScr.setAttribute('aria-pressed', String(S.tab === 'scripts'));
+    refs.search.placeholder = S.tab === 'records' ? '搜名字、事情' : '搜话术';
+    refs.fab.hidden = !(S.dbState === 'ready' && S.canWrite && S.tab === 'records');
+  }
+  function renderMain() {
+    var m = refs.main; m.textContent = '';
+    if (S.tab === 'records') renderRecords(m); else renderScripts(m);
+  }
+
+  function renderRecords(m) {
+    if (S.dbState === 'readonly') { m.appendChild(h('div', { class: 'notice', text: '这本小本本只有主人能看。' })); return; }
+    if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '要在 claude.ai 登录后打开这一页，才能记和存。现在只能看「话术」。' }));
+
+    var openN = S.items.filter(function (it) { return !it.done; }).length;
+    var defs = [['all', '全部', S.items.length], ['open', '跟进中', openN]];
+    classes().concat(S.items.some(function (it) { return it.cls === '其他'; }) ? ['其他'] : []).forEach(function (c) {
+      defs.push(['c:' + c, c, S.items.filter(function (it) { return it.cls === c; }).length]);
+    });
+    var chips = h('div', { class: 'chips', role: 'group', 'aria-label': '筛选' }, defs.map(function (d) {
+      return h('button', { class: 'chip', type: 'button', 'aria-pressed': String(S.filter === d[0]), onclick: function () { S.filter = d[0]; renderMain(); } }, [d[1], h('span', { class: 'count', text: String(d[2]) })]);
+    }));
+    m.appendChild(chips);
+    if (refs.chipsLeft) { chips.scrollLeft = refs.chipsLeft; }
+    chips.addEventListener('scroll', function () { refs.chipsLeft = chips.scrollLeft; }, { passive: true });
+
+    var q = norm(S.q).toLowerCase();
+    var shown = S.items.filter(function (it) {
+      if (S.filter === 'open' && it.done) return false;
+      if (S.filter.slice(0, 2) === 'c:' && it.cls !== S.filter.slice(2)) return false;
+      if (!q) return true;
+      return [it.student, it.cls, typeOf(it.type).name, it.what, it.did, it.result].join(' ').toLowerCase().indexOf(q) >= 0;
+    }).sort(newestFirst);
+
+    if (q && shown.length) {
+      var names = {}; shown.forEach(function (it) { names[norm(it.student)] = 1; });
+      var only = Object.keys(names);
+      if (only.length === 1 && only[0]) m.appendChild(summaryBox(only[0]));
+    }
+
+    if (S.dbState === 'loading') {
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '翻本子中…' }), h('div', { text: '记过的事马上出来。' })]));
+    } else if (S.dbState === 'ready' && !S.items.length) {
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「记一笔」，选好是哪种情况，话术会自动套上。' })]));
+    } else if (S.items.length && !shown.length) {
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜，或者点「全部」。' })]));
+    }
+    var list = h('div', { class: 'list' });
+    shown.forEach(function (it) { list.appendChild(card(it)); });
+    m.appendChild(list);
+  }
+
+  function summaryBox(name) {
+    var st = null; students().forEach(function (s) { if (s.name === name) st = s; });
+    if (!st) return null;
+    var next = st.count + 1, lv = level(next);
+    var nextText = lv === 3 ? '该交给班主任了' : lv === 2 ? '下课单独说一次' : '当场处理';
+    return h('div', { class: 'who-box lv' + lv }, [
+      h('div', { class: 'who-name' }, [h('b', { text: name }), st.cls ? h('span', { text: st.cls }) : null]),
+      h('div', { class: 'who-line', text: '一共记了 ' + st.count + ' 次 · 最近一次是' + nice(st.lastDate) }),
+      h('div', { class: 'who-next', text: '再有一次就是第 ' + next + ' 次：' + nextText })
+    ]);
+  }
+
+  function card(it) {
+    var n = nth(it), lv = level(n), ty = typeOf(it.type);
+    return h('button', { class: 'card lv' + lv, type: 'button', onclick: function () { openForm(it); } }, [
+      h('div', { class: 'card-top' }, [h('span', { text: nice(it.date) }), it.cls ? h('span', { text: it.cls }) : null]),
+      h('div', { class: 'card-name', text: norm(it.student) || '（没写名字）' }),
+      it.what ? h('p', { class: 'card-what', text: it.what }) : null,
+      it.did ? h('p', { class: 'card-did', text: '我：' + it.did }) : null,
+      it.result ? h('p', { class: 'card-did', text: '后来：' + it.result }) : null,
+      h('div', { class: 'tags' }, [
+        h('span', { class: 'tag', text: ty.name }),
+        h('span', { class: 'tag' + (lv === 2 ? ' n2' : lv === 3 ? ' n3' : ''), text: '第 ' + n + ' 次' }),
+        h('span', { class: 'tag ' + (it.done ? 'done' : 'open'), text: it.done ? '结束了' : '跟进中' })
+      ])
+    ]);
+  }
+
+  /* ---------- 话术页 ---------- */
+  function sayBubble(text) { return h('div', { class: 'quote' }, ['「' + text + '」']); }
+  function msgBubble(text) {
+    var btn = h('button', { class: 'copy', type: 'button', text: '复制' });
+    btn.addEventListener('click', function () { copy(text, btn); });
+    return h('div', { class: 'quote msg' }, [h('div', null, [h('div', { class: 'quote-k', text: '发给班主任' }), h('div', { text: text })]), btn]);
+  }
+
+  function renderScripts(m) {
+    var q = norm(S.q);
+    function hit(texts) { return !q || texts.join(' ').indexOf(q) >= 0; }
+    var any = false, E = S.escalateAt;
+    var selfPart = E - 1 === 1 ? '第 1 次' : '第 1–' + (E - 1) + ' 次';
+
+    var rules = ['不讲道理，只说要求。他找什么理由都不接。', '课上不解决，只记名字，下课再处理。', '同一个学生' + selfPart + '自己按话术处理，第 ' + E + ' 次交给班主任。交出去，这件事就算结束。'];
+    if (hit(['总规矩'].concat(rules))) {
+      any = true;
+      m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '三条总规矩' }), h('div', { class: 'box' }, [h('ol', { class: 'rules' }, rules.map(function (r) { return h('li', { text: r }); }))])]));
+    }
+    var rows = SAYINGS.filter(function (s) { return hit(s); });
+    if (rows.length) {
+      any = true;
+      m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '万能句' }), h('p', { class: 'lead', text: '脑子一片空白的时候照着念。说完就停，不解释。' }),
+        h('div', { class: 'box' }, rows.map(function (s) {
+          return h('div', { class: 'say-row' }, [h('span', { class: 'when', text: s[0] }), h('span', { class: 'words', text: '「' + s[1] + '」' })]);
+        }))]));
+    }
+    TYPES.forEach(function (ty) {
+      var texts = [ty.name];
+      [1, 2, 3].forEach(function (l) { var x = ty.lv[l]; texts.push(x.title, x.say || '', x.msg || ''); texts = texts.concat(x.steps); });
+      if (!hit(texts)) return;
+      any = true;
+      var box = h('div', { class: 'box' });
+      [1, 2, 3].forEach(function (l) {
+        if (l === 2 && E <= 2) return;
+        var x = ty.lv[l], n = l === 3 ? E : l;
+        box.appendChild(h('div', { class: 'lvl' }, [
+          h('div', { class: 'lvl-head' }, [h('span', { class: 'tag' + (l === 2 ? ' n2' : l === 3 ? ' n3' : ''), text: lvLabel(l) }), h('span', { text: x.title })]),
+          h('ol', null, x.steps.map(function (s) { return h('li', { text: s }); })),
+          x.say ? sayBubble(fill(x.say, 'XX', n)) : null,
+          x.msg ? msgBubble(fill(x.msg, 'XX', n)) : null
+        ]));
+      });
+      m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: ty.name }), box]));
+    });
+    var calm = ['先不说话，停两秒。', '说「这事下课再说」，接着上课。', '下课打开这一页，照上面的步骤走。'];
+    if (hit(['我自己急了', '脑子一片空白'].concat(calm))) {
+      any = true;
+      m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '我自己急了、脑子一片空白' }), h('div', { class: 'box' }, [h('ol', { class: 'rules' }, calm.map(function (r) { return h('li', { text: r }); }))])]));
+    }
+    var end = ['交给班主任，这件事在我这儿就结束了，不用等结果。', '不需要他认错，也不需要他心服口服。', '有的事就是没有结尾，这不是我做错了。'];
+    if (hit(['收尾'].concat(end))) {
+      any = true;
+      m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '收尾规矩' }), h('div', { class: 'box' }, [h('ul', { class: 'rules' }, end.map(function (r) { return h('li', { text: r }); }))])]));
+    }
+    if (!any) m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
+
+    if (!q) {
+      var can = S.dbState === 'ready' && S.canWrite;
+      m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '设置' }), h('div', { class: 'box' }, [
+        h('div', { class: 'setting' }, [h('span', { text: '同一个学生第几次交给班主任' }), h('div', { class: 'stepper' }, [
+          h('button', { type: 'button', 'aria-label': '少一次', disabled: !can || E <= 2, text: '−', onclick: function () { setEscalate(E - 1); } }),
+          h('output', { text: String(E) }),
+          h('button', { type: 'button', 'aria-label': '多一次', disabled: !can || E >= 6, text: '+', onclick: function () { setEscalate(E + 1); } })
+        ])]),
+        h('div', { class: 'fine', text: '记录只有你看得到；分享给别人，就算对方能打开这一页，看到的也是空本子。' })
+      ])]));
+    }
+  }
+
+  /* 连点只存最后一下，同一时间只写一次 */
+  var escTimer = null, escWriting = false, escPending = null;
+  function escBusy() { return !!escTimer || escWriting; }
+  function setEscalate(n) {
+    S.escalateAt = n; renderMain();
+    clearTimeout(escTimer);
+    escTimer = setTimeout(function () { escTimer = null; writeEscalate(n); }, 500);
+  }
+  function writeEscalate(n) {
+    if (!S.db) return;
+    if (escWriting) { escPending = n; return; }
+    escWriting = true;
+    retry(function () { return S.db.doc('settings/main').set({ escalateAt: n }); })
+      .catch(function (e) { toast(errText(e)); })
+      .then(function () {
+        escWriting = false;
+        if (escPending != null) { var p = escPending; escPending = null; if (p !== n) writeEscalate(p); }
+      });
+  }
+
+  /* ---------- 记一笔（整页） ---------- */
+  function blankForm() { return { id: null, student: '', cls: '', type: '', date: today(), what: '', did: '', result: '', done: false, createdAt: 0, autoDid: '' }; }
+  function formSig(f) { return JSON.stringify([norm(f.student), f.cls, f.type, f.date, f.what.trim(), f.did.trim(), f.result.trim(), !!f.done]); }
+
+  function openForm(it) {
+    if (S.view === 'home') S.scroll[S.tab] = window.scrollY;
+    var f = blankForm();
+    if (it) {
+      f.id = it.id; f.student = it.student || ''; f.cls = it.cls || ''; f.type = it.type || '';
+      f.date = it.date || today(); f.what = it.what || ''; f.did = it.did || ''; f.result = it.result || '';
+      f.done = !!it.done; f.createdAt = it.createdAt || 0;
+    }
+    S.form = f; S.formInit = formSig(f); S.backArmed = false; S.delArmed = false; S.saving = false;
+    mountForm();
+    window.scrollTo(0, 0);
+  }
+
+  function closeForm(showNew) {
+    S.form = null;
+    if (showNew) { S.tab = 'records'; S.filter = 'all'; S.q = ''; S.scroll.records = 0; }
+    mountHome();
+    window.scrollTo(0, S.scroll[S.tab] || 0);
+  }
+
+  function currentN(f) {
+    var key = f.id ? sortKey(f.date, f.createdAt) : sortKey(f.date, Date.now());
+    return countBefore(f.student, key, f.id);
+  }
+
+  function autoText(f) {
+    if (!f.type || !norm(f.student)) return '';
+    var n = currentN(f), x = typeOf(f.type).lv[level(n)], name = norm(f.student), parts = [];
+    if (x.say) parts.push('「' + fill(x.say, name, n) + '」');
+    if (x.msg) parts.push('发给班主任：「' + fill(x.msg, name, n) + '」');
+    return parts.join('\n');
+  }
+  function autoFillDid() {
+    var f = S.form, text = autoText(f);
+    if (!text) return;
+    if (!f.did.trim() || f.did === f.autoDid) {
+      f.did = text; f.autoDid = text;
+      if (refs.did) { refs.did.value = text; grow(refs.did); }
+    }
+  }
+  function grow(el) {
+    el.style.height = 'auto';
+    var want = el.scrollHeight + 3;
+    el.style.height = Math.min(want, 320) + 'px';
+    el.style.overflowY = want > 320 ? 'auto' : 'hidden';
+  }
+
+  function mountForm() {
+    var f = S.form;
+    S.view = 'form'; refs = {};
+    var oldToast = document.querySelector('.toast'); if (oldToast) oldToast.remove();
+    app.textContent = '';
+    refs.back = h('button', { class: 'back', type: 'button', onclick: back, text: '‹ 返回' });
+    refs.save = h('button', { class: 'save', type: 'button', onclick: save, text: '存' });
+    app.appendChild(h('header', { class: 'formbar gutter' }, [h('div', { class: 'wrap formbar-in' }, [refs.back, h('h1', { text: f.id ? '改一笔' : '记一笔' }), refs.save])]));
+    var m = h('div', { class: 'wrap' });
+    app.appendChild(h('main', { class: 'gutter' }, [m]));
+
+    var stu = h('input', { class: 'input', id: 'f-student', placeholder: '名字或外号', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', enterkeyhint: 'done' });
+    stu.value = f.student;
+    stu.addEventListener('input', function () { f.student = stu.value; renderStudents(); renderSuggest(); autoFillDid(); });
+    stu.addEventListener('keydown', function (e) { if (e.key === 'Enter') stu.blur(); });
+    refs.student = stu;
+    refs.students = h('div', { class: 'chips stu-chips', role: 'group', 'aria-label': '记过的学生' });
+    m.appendChild(h('div', { class: 'field' }, [h('label', { for: 'f-student', text: '学生' }), stu, refs.students]));
+
+    refs.cls = h('div', { class: 'chips', role: 'group', 'aria-label': '班级' });
+    m.appendChild(h('div', { class: 'field' }, [h('span', { class: 'label', text: '班级' }), refs.cls]));
+
+    refs.type = h('div', { class: 'chips', role: 'group', 'aria-label': '哪种情况' });
+    m.appendChild(h('div', { class: 'field' }, [h('span', { class: 'label', text: '哪种情况' }), refs.type]));
+
+    refs.suggest = h('div');
+    m.appendChild(refs.suggest);
+
+    function ta(id, label, key, ph, hint) {
+      var el = h('textarea', { class: 'ta', id: id, placeholder: ph, rows: '2' });
+      el.value = f[key];
+      el.addEventListener('input', function () { f[key] = el.value; grow(el); });
+      return { el: el, field: h('div', { class: 'field' }, [h('label', { for: id }, [label, hint ? h('span', { class: 'hint', text: hint }) : null]), el]) };
+    }
+    var what = ta('f-what', '发生了什么', 'what', '一两句就行，比如：上课一直跟同桌说话');
+    var did = ta('f-did', '我怎么处理的', 'did', '选好情况会自动套上话术，改成你实际说的', '自动套了话术，可以改');
+    var res = ta('f-result', '结果 / 后续', 'result', '比如：交给班主任了，到这儿结束');
+    refs.did = did.el;
+    m.appendChild(what.field); m.appendChild(did.field); m.appendChild(res.field);
+
+    var date = h('input', { class: 'input', id: 'f-date', type: 'date' });
+    date.value = f.date;
+    date.addEventListener('change', function () { f.date = date.value || today(); renderSuggest(); autoFillDid(); });
+    m.appendChild(h('div', { class: 'field' }, [h('label', { for: 'f-date', text: '日期' }), date]));
+
+    var done = h('input', { type: 'checkbox', id: 'f-done', role: 'switch' });
+    done.checked = f.done;
+    done.addEventListener('change', function () { f.done = done.checked; });
+    m.appendChild(h('div', { class: 'field' }, [h('label', { class: 'switch', for: 'f-done' }, [
+      h('span', null, [h('b', { text: '这件事结束了' }), h('div', { class: 'fine', text: '交出去了、或者不用再管，就打开' })]), done
+    ])]));
+
+    if (f.id) {
+      var del = h('button', { class: 'danger', type: 'button', text: '删掉这一笔' });
+      del.addEventListener('click', function () { removeItem(del); });
+      m.appendChild(del);
+    }
+
+    renderStudents(); renderClasses(); renderTypes(); renderSuggest();
+    [what.el, did.el, res.el].forEach(grow);
+    [refs.cls, refs.type].forEach(function (row) {
+      var on = row.querySelector('[aria-pressed="true"]');
+      if (on && on.offsetLeft + on.offsetWidth > row.clientWidth - 24) row.scrollLeft = on.offsetLeft - 16;
+    });
+  }
+
+  function renderStudents() {
+    var row = refs.students; if (!row) return;
+    var all = students();
+    if (!all.length) { row.hidden = true; return; }
+    row.hidden = false;
+    var f = S.form, q = norm(f.student).toLowerCase();
+    var list = (q ? all.filter(function (s) { return s.name.toLowerCase().indexOf(q) >= 0; }) : all).slice(0, 20);
+    keepScrollLeft(row, function () {
+      if (!list.length) { row.appendChild(h('span', { class: 'chip-note', text: '新同学，第一次记' })); return; }
+      list.forEach(function (s) {
+        row.appendChild(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(norm(f.student) === s.name), onclick: function () { pickStudent(s); } }, [
+          s.name, s.cls ? h('span', { class: 'chip-sub', text: '· ' + s.cls }) : null, h('span', { class: 'count', text: s.count + '次' })
+        ]));
+      });
+    });
+  }
+  function pickStudent(s) {
+    var f = S.form;
+    f.student = s.name; refs.student.value = s.name;
+    if (s.cls) f.cls = s.cls;
+    renderStudents(); renderClasses(); renderSuggest(); autoFillDid();
+  }
+  function renderClasses() {
+    var row = refs.cls, f = S.form;
+    keepScrollLeft(row, function () {
+      classes().concat(['其他']).forEach(function (c) {
+        row.appendChild(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(f.cls === c), onclick: function () { f.cls = f.cls === c ? '' : c; renderClasses(); } }, [c]));
+      });
+    });
+  }
+  function renderTypes() {
+    var row = refs.type, f = S.form;
+    keepScrollLeft(row, function () {
+      TYPES.forEach(function (t) {
+        row.appendChild(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(f.type === t.key), onclick: function () { f.type = t.key; renderTypes(); renderSuggest(); autoFillDid(); } }, [t.name]));
+      });
+    });
+  }
+  function renderSuggest() {
+    var slot = refs.suggest, f = S.form; if (!slot) return;
+    slot.textContent = '';
+    if (!f.type) { slot.appendChild(h('div', { class: 'suggest-empty', text: '选好「哪种情况」，这里会出来这一次该怎么做、照着说哪句。' })); return; }
+    var name = norm(f.student), n = currentN(f), lv = level(n), x = typeOf(f.type).lv[lv];
+    var who = name ? name + '的第 ' + n + ' 次' + (lv === 3 ? '，该交给班主任了' : '') : '写上名字，就知道是他第几次了';
+    slot.appendChild(h('div', { class: 'suggest lv' + lv }, [
+      h('div', { class: 'who', text: who }),
+      h('div', { class: 'what', text: x.title }),
+      h('ol', null, x.steps.map(function (s) { return h('li', { text: s }); })),
+      x.say ? sayBubble(fill(x.say, name, n)) : null,
+      x.msg ? msgBubble(fill(x.msg, name, n)) : null
+    ]));
+  }
+
+  function save() {
+    var f = S.form;
+    if (!f || S.saving) return;
+    if (!norm(f.student)) { toast('先写名字'); refs.student.focus(); return; }
+    if (!f.type) { toast('选一下是哪种情况'); return; }
+    if (!S.db) { toast('现在存不了：要在 claude.ai 登录后打开'); return; }
+    var body = { student: norm(f.student), cls: f.cls, type: f.type, date: f.date || today(), what: f.what.trim(), did: f.did.trim(), result: f.result.trim(), done: !!f.done, updatedAt: Date.now() };
+    var isNew = !f.id, p;
+    if (isNew) {
+      var ref = S.db.collection('incidents').doc();
+      body.createdAt = Date.now();
+      p = retry(function () { return ref.set(body); });
+    } else {
+      p = retry(function () { return S.db.doc('incidents/' + f.id).update(body); });
+    }
+    S.saving = true; refs.save.disabled = true; refs.save.textContent = '存着…';
+    p.then(function () {
+      S.saving = false;
+      if (S.form !== f) return;
+      closeForm(isNew); toast(isNew ? '记好了' : '改好了');
+    }, function (e) {
+      S.saving = false;
+      if (S.form === f && refs.save) { refs.save.disabled = false; refs.save.textContent = '存'; }
+      toast(errText(e));
+    });
+  }
+
+  /* 返回也会存；名字或情况没填、存不了的时候，再点一次才算不要 */
+  function back() {
+    var f = S.form;
+    if (!f || formSig(f) === S.formInit) { closeForm(false); return; }
+    if (norm(f.student) && f.type) { save(); return; }
+    if (S.backArmed) { closeForm(false); return; }
+    S.backArmed = true;
+    toast((!norm(f.student) ? '还没写名字' : '还没选是哪种情况') + '，存不了。再点一次「返回」就不要这一笔了');
+    setTimeout(function () { S.backArmed = false; }, 4000);
+  }
+
+  function removeItem(btn) {
+    var f = S.form;
+    if (!S.delArmed) {
+      S.delArmed = true; btn.className = 'danger armed'; btn.textContent = '再点一次，真的删掉';
+      setTimeout(function () { if (S.form === f && S.delArmed) { S.delArmed = false; btn.className = 'danger'; btn.textContent = '删掉这一笔'; } }, 4000);
+      return;
+    }
+    if (!S.db) return;
+    btn.disabled = true;
+    retry(function () { return S.db.doc('incidents/' + f.id).delete(); }).then(function () {
+      if (S.form !== f) return;
+      closeForm(false); toast('删掉了');
+    }, function (e) { btn.disabled = false; toast(errText(e)); });
+  }
+
+  /* 数据来了：首页重画卡片，记一笔页只更新「第几次」和学生那一排，不动输入框 */
+  function onData() {
+    if (S.view === 'home') { syncHeader(); renderMain(); }
+    else if (S.view === 'form' && S.form) { renderStudents(); renderSuggest(); }
+  }
+
+  /* ---------- 接上数据库 ---------- */
+  mountHome();
+  (async function () {
+    var c = window.claude, db = null, user = null;
+    try { db = c && typeof c.use === 'function' ? await c.use('db') : null; } catch (e) { db = null; }
+    if (!db) { S.dbState = 'none'; onData(); return; }
+    try { user = await c.use('user'); } catch (e) { user = null; }
+    if (user) {
+      var ok = true;
+      try { ok = await user.canEdit(); } catch (e) { ok = true; }
+      if (ok === false) { S.dbState = 'readonly'; S.canWrite = false; onData(); return; }
+    }
+    S.db = db;
+    db.collection('incidents').onSnapshot(function (snap) {
+      S.items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data() || {}); });
+      S.dbState = 'ready'; onData();
+    }, function (e) {
+      if (e && (e.code === 'revoked' || e.code === 'not_granted')) { S.db = null; S.dbState = 'none'; }
+      else { S.dbState = 'ready'; toast('读记录出错了，刷新一下试试'); }
+      onData();
+    });
+    db.doc('settings/main').onSnapshot(function (snap) {
+      if (escBusy()) return;
+      var d = snap.exists ? snap.data() : null, v = d ? +d.escalateAt : 3;
+      var next = v >= 2 && v <= 6 ? v : 3;
+      if (next !== S.escalateAt) { S.escalateAt = next; onData(); }
+    }, function () {});
+  })();
+})();
+</script>
