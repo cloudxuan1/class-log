@@ -931,22 +931,32 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     var t = norm(String(s == null ? '' : s).replace(/[\u200b-\u200d\u2060\ufeff]/g, ''));
     return /^[㐀-鿿](?: [㐀-鿿])+$/.test(t) ? t.replace(/ /g, '') : t;
   }
-  /* 一格里用空格隔开好几样（从微信、PDF 复制的「名字 男」）：有汉字时按空格切，取第一个不是纯数字的词 */
+  /* 不是名字的词：纯数字（学号）、班级（「3班」「高一(3)班」「七年级」：带数字、以「班 / 级」结尾）、性别 */
+  var NOT_NAME = /^\d+$|^\S*[\d一二三四五六七八九十]\S*[班级]$|^[男女]$/;
+  /* 一格里用空格隔开好几样（从微信、PDF 复制的「名字 男」「3班 名字」）：有汉字时按空格切，取第一个是名字的词 */
   function firstWord(t) {
-    if (t.indexOf(' ') < 0 || !/[㐀-鿿]/.test(t)) return t;
-    var w = t.split(' ').filter(function (x) { return !/^\d+$/.test(x); });
+    var w = (/[㐀-鿿]/.test(t) ? t.split(' ') : [t]).filter(function (x) { return x && !NOT_NAME.test(x); });
     return w.length ? w[0] : '';
   }
-  /* 粘进来的一列 → 名单：一行一个，顺序就是学号；前面的学号（「01 名字」「1.名字」）去掉；
-     两列（Tab 隔开）取第一个不是纯数字的格子；空行、表头跳过；重复的只留第一次 */
+  /* 一格 → 名字：先把班级、学号、性别那几样拿掉（「3班」的 3 别当学号去掉），再去掉开头的学号（「01 名字」「1.名字」） */
+  function cellName(c) {
+    var t = cleanName(c).split(' ').filter(function (x) { return !NOT_NAME.test(x); }).join(' ');
+    return firstWord(cleanName(t.replace(/^\s*(?:[(（[【]?\d+\s*[.、．,，:：)）\]】-]?|[①-⑳])\s*/, '')));
+  }
+  /* 粘进来的名单 → 名字：一行一个，顺序就是学号；全角数字先换成半角；
+     两列以上（Tab 隔开）一行一个人，取第一个是名字的格子；没有 Tab 的行里用「、，,」隔开的，一段一个人；
+     空行、表头跳过；重复的只留第一次 */
   function parseRoster(text) {
     var names = [], dup = 0;
-    String(text || '').split(/\r\n|\r|\n/).forEach(function (line) {
-      var cells = line.split('\t'), nm = '';
-      for (var i = 0; i < cells.length && !nm; i++) nm = firstWord(cleanName(cells[i].replace(/^\s*(?:[(（[【]?\d+\s*[.、．,，:：)）\]】-]?|[①-⑳])\s*/, '')));
+    function add(nm) {
       if (!nm || HEAD_WORDS.indexOf(nm) >= 0 || /姓名|学号/.test(nm)) return;
       if (names.indexOf(nm) >= 0) { dup++; return; }
       names.push(nm);
+    }
+    String(text || '').replace(/[\uff10-\uff19]/g, function (d) { return String.fromCharCode(d.charCodeAt(0) - 0xfee0); }).split(/\r\n|\r|\n/).forEach(function (line) {
+      var cells = line.split('\t'), nm = '';
+      if (cells.length > 1) { for (var i = 0; i < cells.length && !nm; i++) nm = cellName(cells[i]); add(nm); return; }
+      (/[㐀-鿿]/.test(line) ? line.split(/[、，,]/) : [line]).forEach(function (seg) { add(cellName(seg)); });
     });
     return { names: names, dup: dup };
   }
