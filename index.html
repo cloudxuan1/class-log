@@ -40,7 +40,7 @@
   --c1: #2d5fa6; --c1-soft: #dde9fb;
   --c2: #6847a8; --c2-soft: #ebe3f8;
   --c3: #1f6f69; --c3-soft: #d6efec;
-  --leaf1: #eef3fb; --leaf2: #fbeff4;
+  --leaf1: #eef3fb; --leaf2: #fbeff4; --toast-act: #f4a3b9;
   --shadow: 0 1px 2px rgba(31, 45, 68, .06), 0 6px 18px rgba(31, 45, 68, .07);
   --font-display: "ZCOOL KuaiLe", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
@@ -54,7 +54,7 @@
     --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
     --good: #f08aa6; --good-soft: #3a2430;
     --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
-    --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
+    --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331; --toast-act: #c4507a;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
@@ -66,7 +66,7 @@
   --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
   --good: #f08aa6; --good-soft: #3a2430;
   --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
-  --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
+  --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331; --toast-act: #c4507a;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
@@ -257,6 +257,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .danger.armed { background: var(--warn); border-color: var(--warn); color: var(--on-warn); }
 
 .toast { position: fixed; z-index: 40; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 16px; font-size: 14px; font-weight: 600; text-align: center; box-shadow: var(--shadow); }
+.toast-act { margin: -6px -4px -6px 12px; padding: 6px 4px; color: var(--toast-act); font-weight: 700; }
 .toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -380,11 +381,13 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function newestFirst(a, b) { return itemKey(a) < itemKey(b) ? 1 : -1; }
 
   var toastTimer = null;
-  function toast(msg) {
+  /* action：{ label, fn }，提示条右边多一个按钮（比如「撤销」），停久一点 */
+  function toast(msg, action) {
     var old = document.querySelector('.toast'); if (old) old.remove();
-    var t = h('div', { class: 'toast' + (S.view === 'form' ? ' at-top' : ''), role: 'status', text: msg });
+    var t = h('div', { class: 'toast' + (S.view === 'form' ? ' at-top' : ''), role: 'status' }, [msg,
+      action ? h('button', { class: 'toast-act', type: 'button', text: action.label, onclick: function () { clearTimeout(toastTimer); t.remove(); action.fn(); } }) : null]);
     document.body.appendChild(t);
-    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, 2600);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, action ? 4000 : 2600);
   }
   function copy(text, btn) {
     function done() { var o = btn.textContent; btn.textContent = '复制好了'; setTimeout(function () { btn.textContent = o; }, 1400); }
@@ -580,8 +583,10 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!S.db) return;
     var next = !it.done;
     btn.setAttribute('aria-checked', String(next));
-    S.db.doc('incidents/' + it.id).update({ done: next, updatedAt: Date.now() })
-      .catch(function (e) { btn.setAttribute('aria-checked', String(!next)); toast(errText(e)); });
+    var ref = S.db.doc('incidents/' + it.id);
+    ref.update({ done: next, updatedAt: Date.now() }).then(function () {
+      if (next) toast('已结束', { label: '撤销', fn: function () { ref.update({ done: false, updatedAt: Date.now() }).catch(function (e) { toast(errText(e)); }); } });
+    }, function (e) { btn.setAttribute('aria-checked', String(!next)); toast(errText(e)); });
   }
 
   /* ---------- 话术页 ---------- */
