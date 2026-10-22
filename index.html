@@ -36,6 +36,7 @@
   --warn-soft: #fae0d5;
   --good: #326a47;
   --good-soft: #def0e3;
+  --ring: #b3bfb7; --on-good: #ffffff;
   --c1: #2d5fa6; --c1-soft: #dde9fb;
   --c2: #6847a8; --c2-soft: #ebe3f8;
   --c3: #1f6f69; --c3-soft: #d6efec;
@@ -52,6 +53,7 @@
     --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
     --good: #87c69b; --good-soft: #1d3125;
     --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
+    --ring: #55665c; --on-good: #14261b;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
@@ -63,6 +65,7 @@
   --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
   --good: #87c69b; --good-soft: #1d3125;
   --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
+  --ring: #55665c; --on-good: #14261b;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
@@ -121,6 +124,14 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .card-date { font-weight: 700; color: var(--pink-ink); }
 .card-name { display: flex; align-items: center; gap: 8px; margin-top: 1px; font-size: 18px; font-weight: 700; letter-spacing: .02em; }
 .card-name > span:last-child { min-width: 0; }
+/* 右上角「这件事结束了」：像提醒事项那样点一下打勾；和卡片是兄弟元素，不嵌在卡片按钮里 */
+.card-wrap { position: relative; }
+.card-top, .card-name { padding-right: 34px; }
+.check { position: absolute; top: 3px; right: 3px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.check i { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--ring); color: var(--on-good); display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease; }
+.check svg { width: 14px; height: 14px; opacity: 0; }
+.check[aria-checked="true"] i { background: var(--good); border-color: var(--good); }
+.check[aria-checked="true"] svg { opacity: 1; }
 /* 班级胶囊：设置里第 1/2/3 个班 蓝/紫/青，其他灰 */
 .cls-pill { flex: none; display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; letter-spacing: 0; background: var(--paper); color: var(--ink2); }
 .cls-pill.c1 { background: var(--c1-soft); color: var(--c1); }
@@ -132,8 +143,6 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .tag { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--paper); color: var(--ink2); white-space: nowrap; }
 .tag.n2 { background: var(--yellow-soft); color: var(--yellow); }
 .tag.n3 { background: var(--warn-soft); color: var(--warn); }
-.tag.done { background: var(--good-soft); color: var(--good); }
-.tag.open { background: var(--pink-soft); color: var(--pink-ink); }
 
 .who-box { position: relative; margin-top: 10px; background: var(--card); border-radius: var(--r); box-shadow: var(--shadow); padding: 12px 16px 12px 18px; }
 .who-name { display: flex; align-items: center; gap: 8px; }
@@ -457,9 +466,12 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     var i = S.classes.map(norm).indexOf(c);
     return h('span', { class: 'cls-pill' + (i >= 0 ? ' c' + (i + 1) : ''), text: c });
   }
+  var CHECK_SVG = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.4l2.6 2.6L11 4.4"/></svg>';
   function card(it) {
     var n = nth(it), lv = level(n), ty = typeOf(it.type);
-    return h('button', { class: 'card lv' + lv, type: 'button', onclick: function () { openForm(it); } }, [
+    var chk = h('button', { class: 'check', type: 'button', role: 'checkbox', 'aria-checked': String(!!it.done), 'aria-label': '这件事结束了', onclick: function () { toggleDone(it, chk); } }, [h('i')]);
+    chk.firstChild.innerHTML = CHECK_SVG;
+    return h('div', { class: 'card-wrap' }, [h('button', { class: 'card lv' + lv, type: 'button', onclick: function () { openForm(it); } }, [
       h('div', { class: 'card-top' }, [h('span', { class: 'card-date', text: nice(it.date) })]),
       h('div', { class: 'card-name' }, [it.cls ? clsPill(it.cls) : null, h('span', { text: norm(it.student) || '（没写名字）' })]),
       it.what ? h('p', { class: 'card-what', text: it.what }) : null,
@@ -467,10 +479,17 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       it.result ? h('p', { class: 'card-did', text: '后来：' + it.result }) : null,
       h('div', { class: 'tags' }, [
         h('span', { class: 'tag', text: ty.name }),
-        h('span', { class: 'tag' + (lv === 2 ? ' n2' : lv === 3 ? ' n3' : ''), text: '第 ' + n + ' 次' }),
-        h('span', { class: 'tag ' + (it.done ? 'done' : 'open'), text: it.done ? '结束了' : '跟进中' })
+        h('span', { class: 'tag' + (lv === 2 ? ' n2' : lv === 3 ? ' n3' : ''), text: '第 ' + n + ' 次' })
       ])
-    ]);
+    ]), chk]);
+  }
+  /* 卡片右上角打勾：直接改「这件事结束了」，不用进记一笔 */
+  function toggleDone(it, btn) {
+    if (!S.db) return;
+    var next = !it.done;
+    btn.setAttribute('aria-checked', String(next));
+    S.db.doc('incidents/' + it.id).update({ done: next, updatedAt: Date.now() })
+      .catch(function (e) { btn.setAttribute('aria-checked', String(!next)); toast(errText(e)); });
   }
 
   /* ---------- 话术页 ---------- */
