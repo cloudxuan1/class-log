@@ -243,7 +243,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   /* ---------- 状态 ---------- */
   var S = {
-    db: null, dbState: 'loading', canWrite: true, items: [], escalateAt: 3,
+    db: null, dbState: 'loading', items: [], escalateAt: 3,
     view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
     form: null, formInit: '', saving: false, backArmed: false, delArmed: false
   };
@@ -331,17 +331,9 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     }
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
   }
-  function retry(fn) {
-    return fn().catch(function (e) {
-      if (e && e.code === 'unavailable') return new Promise(function (r) { setTimeout(r, 400 + Math.random() * 600); }).then(fn);
-      throw e;
-    });
-  }
   function errText(e) {
-    var c = e && e.code;
-    if (c === 'quota_exceeded') return '本子满了，删掉一些旧的再存';
-    if (c === 'invalid_argument' || c === 'not_granted' || c === 'revoked') return '存不了：这本子只有主人能记';
-    return '没存上，网络不好，等一下再点一次';
+    if (e && e.name === 'QuotaExceededError') return '本子满了，删掉一些旧的再存';
+    return '没存上，再点一次试试';
   }
   function keepScrollLeft(row, build) { var sl = row.scrollLeft; row.textContent = ''; build(); row.scrollLeft = sl; }
 
@@ -376,7 +368,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     refs.tabRec.setAttribute('aria-pressed', String(S.tab === 'records'));
     refs.tabScr.setAttribute('aria-pressed', String(S.tab === 'scripts'));
     refs.search.placeholder = S.tab === 'records' ? '搜名字、事情' : '搜话术';
-    refs.fab.hidden = !(S.dbState === 'ready' && S.canWrite && S.tab === 'records');
+    refs.fab.hidden = !(S.dbState === 'ready' && S.tab === 'records');
   }
   function renderMain() {
     var m = refs.main; m.textContent = '';
@@ -384,8 +376,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   }
 
   function renderRecords(m) {
-    if (S.dbState === 'readonly') { m.appendChild(h('div', { class: 'notice', text: '这本小本本只有主人能看。' })); return; }
-    if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '要在 claude.ai 登录后打开这一页，才能记和存。现在只能看「话术」。' }));
+    if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '这个浏览器存不了记录（可能开了无痕浏览），现在只能看「话术」。' }));
 
     var openN = S.items.filter(function (it) { return !it.done; }).length;
     var defs = [['all', '全部', S.items.length], ['open', '跟进中', openN]];
@@ -511,14 +502,14 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!any) m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
 
     if (!q) {
-      var can = S.dbState === 'ready' && S.canWrite;
+      var can = S.dbState === 'ready';
       m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '设置' }), h('div', { class: 'box' }, [
         h('div', { class: 'setting' }, [h('span', { text: '同一个学生第几次交给班主任' }), h('div', { class: 'stepper' }, [
           h('button', { type: 'button', 'aria-label': '少一次', disabled: !can || E <= 2, text: '−', onclick: function () { setEscalate(E - 1); } }),
           h('output', { text: String(E) }),
           h('button', { type: 'button', 'aria-label': '多一次', disabled: !can || E >= 6, text: '+', onclick: function () { setEscalate(E + 1); } })
         ])]),
-        h('div', { class: 'fine', text: '记录只有你看得到；分享给别人，就算对方能打开这一页，看到的也是空本子。' })
+        h('div', { class: 'fine', text: '记录只存在这台设备的浏览器里，不上传；别人打开这个网址，看到的是自己的空本子。' })
       ])]));
     }
   }
@@ -535,7 +526,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!S.db) return;
     if (escWriting) { escPending = n; return; }
     escWriting = true;
-    retry(function () { return S.db.doc('settings/main').set({ escalateAt: n }); })
+    S.db.doc('settings/main').set({ escalateAt: n })
       .catch(function (e) { toast(errText(e)); })
       .then(function () {
         escWriting = false;
@@ -718,15 +709,15 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!f || S.saving) return;
     if (!norm(f.student)) { toast('先写名字'); refs.student.focus(); return; }
     if (!f.type) { toast('选一下是哪种情况'); return; }
-    if (!S.db) { toast('现在存不了：要在 claude.ai 登录后打开'); return; }
+    if (!S.db) { toast('这个浏览器存不了记录'); return; }
     var body = { student: norm(f.student), cls: f.cls, type: f.type, date: f.date || today(), what: f.what.trim(), did: f.did.trim(), result: f.result.trim(), done: !!f.done, updatedAt: Date.now() };
     var isNew = !f.id, p;
     if (isNew) {
       var ref = S.db.collection('incidents').doc();
       body.createdAt = Date.now();
-      p = retry(function () { return ref.set(body); });
+      p = ref.set(body);
     } else {
-      p = retry(function () { return S.db.doc('incidents/' + f.id).update(body); });
+      p = S.db.doc('incidents/' + f.id).update(body);
     }
     S.saving = true; refs.save.disabled = true; refs.save.textContent = '存着…';
     p.then(function () {
@@ -760,7 +751,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     }
     if (!S.db) return;
     btn.disabled = true;
-    retry(function () { return S.db.doc('incidents/' + f.id).delete(); }).then(function () {
+    S.db.doc('incidents/' + f.id).delete().then(function () {
       if (S.form !== f) return;
       closeForm(false); toast('删掉了');
     }, function (e) { btn.disabled = false; toast(errText(e)); });
@@ -772,25 +763,105 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     else if (S.view === 'form' && S.form) { renderStudents(); renderSuggest(); }
   }
 
+  /* ---------- 本地存储：IndexedDB 库 class-log，一个集合一个 object store，key 是文档 id。
+     接口照 claude.ai 的 db 写（collection/doc/set/update/delete/onSnapshot）；
+     写完先把新数据推给所有 onSnapshot 再算存好，别的标签页用 BroadcastChannel 通知。 ---------- */
+  function openLocalDb() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open('class-log', 1);
+      req.onupgradeneeded = function () {
+        ['incidents', 'settings'].forEach(function (n) { if (!req.result.objectStoreNames.contains(n)) req.result.createObjectStore(n); });
+      };
+      req.onsuccess = function () { resolve(localDb(req.result)); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function localDb(idb) {
+    var subs = [], chan = null;
+    idb.onversionchange = function () { idb.close(); };
+    try { chan = new BroadcastChannel('class-log'); chan.onmessage = function (e) { notify(e.data); }; } catch (e) {}
+
+    function tx(cols, mode, work) {
+      return new Promise(function (resolve, reject) {
+        var t = idb.transaction(cols, mode);
+        work(t);
+        t.oncomplete = function () { resolve(); };
+        t.onabort = t.onerror = function () { reject(t.error); };
+      });
+    }
+    function read(col, id) {
+      var docs = [], one;
+      return tx(col, 'readonly', function (t) {
+        var st = t.objectStore(col);
+        if (id) { var g = st.get(id); g.onsuccess = function () { one = g.result; }; return; }
+        st.openCursor().onsuccess = function (e) {
+          var c = e.target.result; if (!c) return;
+          docs.push({ id: c.key, v: c.value }); c.continue();
+        };
+      }).then(function () {
+        if (id) return { id: id, exists: one !== undefined, data: function () { return one; } };
+        return { docs: docs.map(function (d) { return { id: d.id, data: function () { return d.v; } }; }) };
+      });
+    }
+    /* 同一个监听连着读好几次时，只送最后一次的结果 */
+    function deliver(s) {
+      var n = ++s.seq;
+      return read(s.col, s.id).then(function (snap) { if (!s.off && n === s.seq) s.fn(snap); }, function (e) { if (!s.off && s.err) s.err(e); });
+    }
+    function notify(col) { return Promise.all(subs.filter(function (s) { return s.col === col; }).map(deliver)); }
+    function write(col, work) {
+      return tx(col, 'readwrite', function (t) { work(t.objectStore(col)); }).then(function () {
+        if (chan) chan.postMessage(col);
+        return notify(col);
+      });
+    }
+    function listen(col, id, fn, err) {
+      var s = { col: col, id: id, fn: fn, err: err, seq: 0 };
+      subs.push(s); deliver(s);
+      return function () { s.off = true; subs.splice(subs.indexOf(s), 1); };
+    }
+    function newId() {
+      var a = new Uint8Array(10); crypto.getRandomValues(a);
+      return Array.prototype.map.call(a, function (b) { return (b + 256).toString(16).slice(1); }).join('');
+    }
+    function ref(col, id) {
+      return {
+        id: id,
+        set: function (data) { return write(col, function (st) { st.put(data, id); }); },
+        /* 合并进已有的；这一笔已经被别的标签页删了，就按这次的内容重新存 */
+        update: function (data) {
+          return write(col, function (st) {
+            var g = st.get(id);
+            g.onsuccess = function () { st.put(Object.assign({}, g.result, data), id); };
+          });
+        },
+        delete: function () { return write(col, function (st) { st.delete(id); }); },
+        onSnapshot: function (fn, err) { return listen(col, id, fn, err); }
+      };
+    }
+    return {
+      collection: function (col) {
+        return { doc: function (id) { return ref(col, id || newId()); }, onSnapshot: function (fn, err) { return listen(col, null, fn, err); } };
+      },
+      doc: function (path) { var p = path.split('/'); return ref(p[0], p[1]); }
+    };
+  }
+
   /* ---------- 接上数据库 ---------- */
   mountHome();
+  try {
+    navigator.storage.persisted().then(function (yes) { return yes || navigator.storage.persist(); }).catch(function () {});
+  } catch (e) {}
   (async function () {
-    var c = window.claude, db = null, user = null;
-    try { db = c && typeof c.use === 'function' ? await c.use('db') : null; } catch (e) { db = null; }
+    var db = null;
+    try { db = await openLocalDb(); } catch (e) { db = null; }
     if (!db) { S.dbState = 'none'; onData(); return; }
-    try { user = await c.use('user'); } catch (e) { user = null; }
-    if (user) {
-      var ok = true;
-      try { ok = await user.canEdit(); } catch (e) { ok = true; }
-      if (ok === false) { S.dbState = 'readonly'; S.canWrite = false; onData(); return; }
-    }
     S.db = db;
     db.collection('incidents').onSnapshot(function (snap) {
       S.items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data() || {}); });
       S.dbState = 'ready'; onData();
-    }, function (e) {
-      if (e && (e.code === 'revoked' || e.code === 'not_granted')) { S.db = null; S.dbState = 'none'; }
-      else { S.dbState = 'ready'; toast('读记录出错了，刷新一下试试'); }
+    }, function () {
+      S.dbState = 'ready'; toast('读记录出错了，刷新一下试试');
       onData();
     });
     db.doc('settings/main').onSnapshot(function (snap) {
