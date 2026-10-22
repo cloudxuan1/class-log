@@ -70,6 +70,16 @@
 
 ---
 
+## 部署（新网页项目都这么做）
+
+- 仓库私有。网页挂 Cloudflare Pages，正式网址用自己的子域名 `<项目名>.cloudxuan1.com`（不带 -，比如 classlog）。DNS 在 Cloudflare，加自定义域会自动配好。
+- main = 正式网址；其他分支自动出预览 `<分支别名>.<项目名>.pages.dev`。开 PR 时把预览链接附上，轩在手机上点开试。
+- PR 一关（合并或者放弃都算），自动删掉这个分支和它的预览。用 GitHub Action 调 Cloudflare 的接口，令牌放在仓库的 Secrets 里，新项目一建好就配上。
+- 数据存在浏览器里的项目：每个网址的数据互不相通，预览只拿来测试，正式只认自己的子域名。
+- 已经在跑的老项目照各自的交接.md 来，不强行迁。
+
+---
+
 # 项目快照
 
 ## 项目概述
@@ -79,8 +89,7 @@ class-log（事件小本本）—— 遇到学生的事就记一笔的单页网�
 - 网址：https://classlog.cloudxuan1.com/ （正式网址，绑在 Cloudflare Pages 上，加到主屏幕的就是它；`class-log.pages.dev` 打开的是同一个站，但数据不通，别在上面记）
 - 仓库：https://github.com/cloudxuan1/class-log （public）
 - 纯前端单文件 `index.html`，无构建；记录只存在浏览器本地（IndexedDB），不上传任何服务器。
-- 部署：Cloudflare Pages 连着这个仓库，push 就自动发布，不用 GitHub Pages。main 发到正式网址；其他分支自动出预览 `https://<分支别名>.class-log.pages.dev`（别名 = 分支名小写、非字母数字换成 `-`），开了 PR 就能在手机上点开试。
-- 每个网址的本地数据互不相通：预览只拿来测试，别在上面记真事。
+- 部署：照上面「部署」那节；预览是 `<分支别名>.class-log.pages.dev`。
 
 ## 绝对不能动
 
