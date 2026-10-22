@@ -926,9 +926,9 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   /* ---------- 名单：设置里第几个班就存 settings/rosterN（N = 1/2/3，改班名不丢名单）；
      每份 = { names: [按学号顺序], regulars: [常客名字], updatedAt }。记录照旧按名字数，名单不动记录 ---------- */
   var HEAD_WORDS = ['姓名', '名字', '学生', '学生姓名', '学号', '序号', '编号', '名单'];
-  /* 名字整理：去掉看不见的字符，多个空格合成一个；每段都是单个汉字的去掉中间空格（Excel 里两个字的名字常在中间塞个全角空格对齐） */
+  /* 名字整理：去掉看不见的字符，多个空格（全角空格也算，norm 里的 \s 管）合成一个；每段都是单个汉字的去掉中间空格（Excel 里两个字的名字常在中间塞个全角空格对齐） */
   function cleanName(s) {
-    var t = norm(String(s == null ? '' : s).replace(/[\u200b-\u200d\u2060\ufeff]/g, '').replace(/　/g, ' '));
+    var t = norm(String(s == null ? '' : s).replace(/[\u200b-\u200d\u2060\ufeff]/g, ''));
     return /^[㐀-鿿](?: [㐀-鿿])+$/.test(t) ? t.replace(/ /g, '') : t;
   }
   /* 一格里用空格隔开好几样（从微信、PDF 复制的「名字 男」）：有汉字时按空格切，取第一个不是纯数字的词 */
