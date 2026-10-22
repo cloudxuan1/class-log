@@ -74,11 +74,13 @@
 
 ## 项目概述
 
-class-log（事件小本本）—— 遇到学生的事就记一笔的单页网页小工具：选好是哪种情况，话术和步骤自动套上；同一个学生第几次会自动数，提示这次自己处理还是交给班主任；记过的能按名字搜。2026-10-22 先在 claude.ai 做成 artifact，再搬到 GitHub Pages。
+class-log（事件小本本）—— 遇到学生的事就记一笔的单页网页小工具：选好是哪种情况，话术和步骤自动套上；同一个学生第几次会自动数，提示这次自己处理还是交给班主任；记过的能按名字搜。2026-10-22 先在 claude.ai 做成 artifact，再搬到 Cloudflare Pages。
 
-- 网址：https://cloudxuan1.github.io/class-log/
+- 网址：https://class-log.pages.dev/ （main 的正式网址，加到主屏幕的就是它）
 - 仓库：https://github.com/cloudxuan1/class-log （public）
 - 纯前端单文件 `index.html`，无构建；记录只存在浏览器本地（IndexedDB），不上传任何服务器。
+- 部署：Cloudflare Pages 连着这个仓库，push 就自动发布，不用 GitHub Pages。main 发到正式网址；其他分支自动出预览 `https://<分支别名>.class-log.pages.dev`（别名 = 分支名小写、非字母数字换成 `-`），开了 PR 就能在手机上点开试。
+- 每个网址的本地数据互不相通：预览只拿来测试，别在上面记真事。
 
 ## 绝对不能动
 
