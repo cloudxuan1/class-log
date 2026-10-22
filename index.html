@@ -111,6 +111,17 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .count { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 5px; font-weight: 500; }
 .chip-sub { font-weight: 500; opacity: .8; margin-left: 4px; }
 .chip-note { flex: none; height: 34px; display: inline-flex; align-items: center; color: var(--ink2); font-size: 13.5px; }
+/* 首页筛选：一排班级 + 全部，右边开关（开着看跟进中，关掉看已完成）；搜索时搜全部，这一排变淡 */
+.frow { display: flex; align-items: center; gap: 10px; }
+.frow .chips { flex: 1 1 auto; min-width: 0; margin-right: 0; padding-right: 4px; gap: 6px; -webkit-mask-image: none; mask-image: none; }
+.frow .chips.fade { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); }
+.frow .chip { padding: 0 11px; }
+.frow .count { margin-left: 4px; }
+.sw { flex: none; position: relative; width: 50px; height: 30px; margin-top: -4px; border-radius: 999px; background: var(--ring); transition: background .2s ease; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s ease; }
+.sw[aria-checked="true"] { background: var(--good); }
+.sw[aria-checked="true"]::after { transform: translateX(20px); }
+.frow.searching .sw { opacity: .45; }
 
 /* ---------- 卡片 ---------- */
 .list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
@@ -277,7 +288,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   /* ---------- 状态 ---------- */
   var S = {
     db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''], settingsAt: 0,
-    view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
+    view: 'home', tab: 'records', filter: 'all', showDone: false, q: '', scroll: { records: 0, scripts: 0 },
     form: null, formInit: '', saving: false, backArmed: false, delArmed: false
   };
   var app = document.getElementById('app');
@@ -412,23 +423,24 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function renderRecords(m) {
     if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '这个浏览器存不了记录（可能开了无痕浏览），现在只能看「话术」。' }));
 
-    var openN = S.items.filter(function (it) { return !it.done; }).length;
-    var defs = [['all', '全部', S.items.length], ['open', '跟进中', openN]];
-    classes().concat(S.items.some(function (it) { return it.cls === '其他'; }) ? ['其他'] : []).forEach(function (c) {
-      defs.push(['c:' + c, c, S.items.filter(function (it) { return it.cls === c; }).length]);
-    });
-    var chips = h('div', { class: 'chips', role: 'group', 'aria-label': '筛选' }, defs.map(function (d) {
-      return h('button', { class: 'chip', type: 'button', 'aria-pressed': String(S.filter === d[0]), onclick: function () { S.filter = d[0]; renderMain(); } }, [d[1], h('span', { class: 'count', text: String(d[2]) })]);
+    var q = norm(S.q).toLowerCase(), searching = !!q;
+    function browse() { if (searching) { S.q = ''; refs.search.value = ''; } renderMain(); }
+    var mine = S.items.filter(function (it) { return !!it.done === S.showDone; });
+    var defs = classes().map(function (c) { return ['c:' + c, c, mine.filter(function (it) { return it.cls === c; }).length]; });
+    defs.push(['all', '全部', mine.length]);
+    if (!defs.some(function (d) { return d[0] === S.filter; })) S.filter = 'all';
+    var chips = h('div', { class: 'chips', role: 'group', 'aria-label': '班级' }, defs.map(function (d) {
+      return h('button', { class: 'chip', type: 'button', 'aria-pressed': String(!searching && S.filter === d[0]), onclick: function () { S.filter = d[0]; browse(); } }, [d[1], h('span', { class: 'count', text: String(d[2]) })]);
     }));
-    m.appendChild(chips);
+    var sw = h('button', { class: 'sw', type: 'button', role: 'switch', 'aria-checked': String(!S.showDone), 'aria-label': '只看跟进中，关掉看已完成', onclick: function () { S.showDone = !S.showDone; browse(); } });
+    m.appendChild(h('div', { class: 'frow' + (searching ? ' searching' : '') }, [chips, sw]));
+    if (chips.scrollWidth > chips.clientWidth + 1) chips.classList.add('fade');
     if (refs.chipsLeft) { chips.scrollLeft = refs.chipsLeft; }
     chips.addEventListener('scroll', function () { refs.chipsLeft = chips.scrollLeft; }, { passive: true });
 
-    var q = norm(S.q).toLowerCase();
-    var shown = S.items.filter(function (it) {
-      if (S.filter === 'open' && it.done) return false;
-      if (S.filter.slice(0, 2) === 'c:' && it.cls !== S.filter.slice(2)) return false;
-      if (!q) return true;
+    /* 搜索：不管上面选什么，在所有记录里找 */
+    var shown = (searching ? S.items : mine).filter(function (it) {
+      if (!q) return S.filter === 'all' || it.cls === S.filter.slice(2);
       return [it.student, it.cls, typeOf(it.type).name, it.what, it.did, it.result].join(' ').toLowerCase().indexOf(q) >= 0;
     }).sort(newestFirst);
 
@@ -442,8 +454,12 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '翻本子中…' }), h('div', { text: '记过的事马上出来。' })]));
     } else if (S.dbState === 'ready' && !S.items.length) {
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「记一笔」，选好是哪种情况，话术会自动套上。' })]));
+    } else if (searching && !shown.length) {
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
     } else if (S.items.length && !shown.length) {
-      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜，或者点「全部」。' })]));
+      m.appendChild(h('div', { class: 'empty' }, S.showDone
+        ? [h('div', { class: 'big', text: '还没有结束的事' }), h('div', { text: '卡片右上角打勾，就会收到这里。' })]
+        : [h('div', { class: 'big', text: '都处理完了' }), h('div', { text: '没有要跟进的事。' })]));
     }
     var list = h('div', { class: 'list' });
     shown.forEach(function (it) { list.appendChild(card(it)); });
@@ -671,7 +687,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   function closeForm(showNew) {
     S.form = null;
-    if (showNew) { S.tab = 'records'; S.filter = 'all'; S.q = ''; S.scroll.records = 0; }
+    if (showNew) { S.tab = 'records'; S.filter = 'all'; S.showDone = false; S.q = ''; S.scroll.records = 0; }
     mountHome();
     window.scrollTo(0, S.scroll[S.tab] || 0);
   }
