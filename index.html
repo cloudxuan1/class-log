@@ -900,17 +900,23 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
         else { r.same++; return; }
         have[x.id] = d; b.set(S.db.doc('incidents/' + x.id), d);
       });
-      var st = o.settings;
-      if (st && +st.updatedAt > S.settingsAt && !settingsBusy()) {
+      var st = o.settings, takeSt = !!st && +st.updatedAt > S.settingsAt && !settingsBusy();
+      if (takeSt) {
         var v = +st.escalateAt;
         b.set(S.db.doc('settings/main'), { escalateAt: v >= 2 && v <= 6 ? v : 3, updatedAt: +st.updatedAt,
           classes: [0, 1, 2].map(function (i) { return Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }) });
       }
-      /* 名单：每个班 updatedAt 新的那份赢；老备份没有 rosters 就跳过 */
-      var ro = o.rosters && typeof o.rosters === 'object' ? o.rosters : {}, rn = 0;
-      [0, 1, 2].forEach(function (i) {
-        var d = cleanRoster(ro['roster' + (i + 1)]), mine = S.rosters[i];
-        if (d && d.names.length && (!mine || d.updatedAt > mine.updatedAt)) { b.set(S.db.doc('settings/roster' + (i + 1)), d); rn++; }
+      /* 名单：设置也一起导进来就按第几个班放；设置没导（本机的新）就按班名找本机同名的班，找不到的不导、提示一句。
+         每个班 updatedAt 新的那份赢；老备份没有 rosters 就跳过 */
+      var ro = o.rosters && typeof o.rosters === 'object' ? o.rosters : {}, rn = 0, miss = 0, used = [];
+      var bkCls = !takeSt && st && Array.isArray(st.classes) ? st.classes : null, myCls = S.classes.map(norm);
+      [0, 1, 2].forEach(function (j) {
+        var d = cleanRoster(ro['roster' + (j + 1)]), c = bkCls ? norm(bkCls[j]) : '', i = bkCls ? (c ? myCls.indexOf(c) : -1) : j;
+        if (!d || !d.names.length) return;
+        if (i < 0 || used[i]) { miss++; return; }
+        used[i] = true;
+        var mine = S.rosters[i];
+        if (!mine || d.updatedAt > mine.updatedAt) { b.set(S.db.doc('settings/roster' + (i + 1)), d); rn++; }
       });
       return b.commit().then(function () {
         var parts = [];
@@ -918,6 +924,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
         if (r.updated) parts.push('更新 ' + r.updated + ' 条');
         if (r.same) parts.push(r.same + ' 条本来就有');
         if (rn) parts.push('名单 ' + rn + ' 份');
+        if (miss) parts.push('有 ' + miss + ' 份名单班名对不上，没导');
         toast('导入好了' + (parts.length ? '：' + parts.join('，') : ''));
       });
     }).catch(function (e) { toast(errText(e)); });
