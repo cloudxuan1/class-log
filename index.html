@@ -16,56 +16,60 @@
    「记一笔」整页切过去（不弹层、不原地展开），「存」在顶栏；返回也会存。
    短选项一律一排横着滑。只有一层吸顶。 */
 :root {
-  --paper: #f1f4ee;
+  --paper: #f2f5fa;
   --card: #ffffff;
-  --ink: #22302a;
-  --ink2: #5a6961;
-  --line: #dbe3d8;
-  --board: #2c4437;
-  --board2: #3b5747;
-  --chalk: #f6f3e8;
-  --chalk2: #c6d4c9;
-  --pink: #c2416a;
+  --ink: #1f2d44;
+  --ink2: #5d6b82;
+  --line: #dce3ee;
+  --board: #5585c7;
+  --board2: #3f69a8;
+  --chalk: #ffffff;
+  --chalk2: #e3edfa;
+  --pink: #dc5d88;
   --on-pink: #ffffff;
-  --pink-soft: #fbe3ea;
-  --pink-ink: #a8345a;
+  --pink-soft: #fde6ee;
+  --pink-ink: #c4507a;
   --yellow: #805a0b;
   --yellow-soft: #f8edcf;
   --warn: #a3401c;
   --on-warn: #ffffff;
   --warn-soft: #fae0d5;
-  --good: #326a47;
-  --good-soft: #def0e3;
-  --ring: #b3bfb7; --on-good: #ffffff;
+  --good: #dc5d88;
+  --good-soft: #fde6ee;
+  --ring: #c3ccda; --on-good: #ffffff;
   --c1: #2d5fa6; --c1-soft: #dde9fb;
   --c2: #6847a8; --c2-soft: #ebe3f8;
   --c3: #1f6f69; --c3-soft: #d6efec;
-  --shadow: 0 1px 2px rgba(34, 48, 42, .06), 0 6px 18px rgba(34, 48, 42, .07);
+  --leaf1: #eef3fb; --leaf2: #fbeff4;
+  --glass: rgba(246, 214, 224, .58); --glass-ink: #7d4258; --glass-line: rgba(255, 255, 255, .65); --glass-hi: rgba(255, 255, 255, .7); --glass-shadow: rgba(140, 80, 100, .18); --glass-btn: #b9718a; --glass-btn-ink: #ffffff;
+  --shadow: 0 1px 2px rgba(31, 45, 68, .06), 0 6px 18px rgba(31, 45, 68, .07);
   --font-display: "ZCOOL KuaiLe", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --r: 18px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #141c17; --card: #1d2822; --ink: #e6ede7; --ink2: #a1b0a6; --line: #2f3d35;
-    --board: #1f3127; --board2: #2e4437; --chalk: #f0ede2; --chalk2: #a9bbad;
+    --paper: #121821; --card: #1b2330; --ink: #e6ecf5; --ink2: #9aa8bd; --line: #2b3646;
+    --board: #2a4470; --board2: #1e3356; --chalk: #f2f6fc; --chalk2: #b9cbe6;
     --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
     --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
-    --good: #87c69b; --good-soft: #1d3125;
+    --good: #f08aa6; --good-soft: #3a2430;
     --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
-    --ring: #55665c; --on-good: #14261b;
+    --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
+    --glass: rgba(92, 52, 66, .5); --glass-ink: #f2cbd7; --glass-line: rgba(255, 255, 255, .14); --glass-hi: rgba(255, 255, 255, .12); --glass-shadow: rgba(0, 0, 0, .35); --glass-btn: #c98aa0; --glass-btn-ink: #2a1119;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #141c17; --card: #1d2822; --ink: #e6ede7; --ink2: #a1b0a6; --line: #2f3d35;
-  --board: #1f3127; --board2: #2e4437; --chalk: #f0ede2; --chalk2: #a9bbad;
+  --paper: #121821; --card: #1b2330; --ink: #e6ecf5; --ink2: #9aa8bd; --line: #2b3646;
+  --board: #2a4470; --board2: #1e3356; --chalk: #f2f6fc; --chalk2: #b9cbe6;
   --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
   --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
-  --good: #87c69b; --good-soft: #1d3125;
+  --good: #f08aa6; --good-soft: #3a2430;
   --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
-  --ring: #55665c; --on-good: #14261b;
+  --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
+  --glass: rgba(92, 52, 66, .5); --glass-ink: #f2cbd7; --glass-line: rgba(255, 255, 255, .14); --glass-hi: rgba(255, 255, 255, .12); --glass-shadow: rgba(0, 0, 0, .35); --glass-btn: #c98aa0; --glass-btn-ink: #2a1119;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
@@ -85,14 +89,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .top .wrap { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .top h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: .04em; line-height: 1.25; }
 .top .sub { margin: 0; color: var(--chalk2); font-size: 12.5px; white-space: nowrap; }
-.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--board); padding-top: 8px; padding-bottom: 12px; border-radius: 0 0 22px 22px; box-shadow: 0 6px 16px rgba(20, 35, 27, .16); }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--board); padding-top: 8px; padding-bottom: 12px; border-radius: 0 0 22px 22px; box-shadow: 0 6px 16px rgba(40, 70, 120, .20); }
 .bar-in { display: flex; gap: 8px; align-items: center; }
 .search { flex: 1 1 auto; min-width: 0; height: 40px; border-radius: 999px; border: 1.5px solid transparent; background: var(--board2); color: var(--chalk); padding: 0 14px; font: inherit; font-size: 16px; -webkit-appearance: none; appearance: none; }
 .search::placeholder { color: var(--chalk2); opacity: 1; }
 .search:focus { outline: none; border-color: var(--chalk2); }
 .seg { flex: none; display: flex; gap: 2px; background: var(--board2); border-radius: 999px; padding: 3px; }
 .seg button { height: 34px; padding: 0 13px; border-radius: 999px; color: var(--chalk2); font-weight: 600; font-size: 14.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.seg button[aria-pressed="true"] { background: var(--chalk); color: var(--board); }
+.seg button[aria-pressed="true"] { background: var(--chalk); color: var(--board2); }
 
 main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
 
@@ -111,6 +115,17 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .count { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 5px; font-weight: 500; }
 .chip-sub { font-weight: 500; opacity: .8; margin-left: 4px; }
 .chip-note { flex: none; height: 34px; display: inline-flex; align-items: center; color: var(--ink2); font-size: 13.5px; }
+/* 首页筛选：一排班级 + 全部，右边开关（开着看跟进中，关掉看已完成）；搜索时搜全部，这一排变淡 */
+.frow { display: flex; align-items: center; gap: 10px; }
+.frow .chips { flex: 1 1 auto; min-width: 0; margin-right: 0; padding-right: 4px; gap: 6px; -webkit-mask-image: none; mask-image: none; }
+.frow .chips.fade { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); }
+.frow .chip { padding: 0 11px; }
+.frow .count { margin-left: 4px; }
+.sw { flex: none; position: relative; width: 50px; height: 30px; margin-top: -4px; border-radius: 999px; background: var(--ring); transition: background .2s ease; }
+.sw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s ease; }
+.sw[aria-checked="true"] { background: var(--good); }
+.sw[aria-checked="true"]::after { transform: translateX(20px); }
+.frow.searching .sw { opacity: .45; }
 
 /* ---------- 卡片 ---------- */
 .list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
@@ -132,6 +147,25 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .check svg { width: 14px; height: 14px; opacity: 0; }
 .check[aria-checked="true"] i { background: var(--good); border-color: var(--good); }
 .check[aria-checked="true"] svg { opacity: 1; }
+/* 已完成：一个学生一叠，最新的在最上面完整露出，旧的依次压在下面；点一叠整页切到这个人 */
+.stacks { display: flex; flex-direction: column; gap: 20px; margin-top: 16px; }
+.stack { position: relative; display: block; width: 100%; text-align: left; padding-top: 30px; transition: transform .12s ease; }
+.stack:active { transform: scale(.985); }
+.tab { position: absolute; top: 0; left: 0; max-width: 100%; height: 38px; padding: 0 14px 8px; border-radius: 14px 14px 0 0; background: var(--card); display: flex; align-items: center; gap: 8px; }
+.tab b { min-width: 0; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tab .n { flex: none; color: var(--ink2); font-size: 12.5px; font-weight: 600; }
+.leaf { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px 16px 12px 18px; }
+.leaf.front { z-index: 3; box-shadow: var(--shadow); }
+.leaf.under { margin-top: -16px; padding-top: 24px; padding-bottom: 9px; }
+.leaf.u1 { z-index: 2; margin-left: 5px; margin-right: 5px; background: var(--leaf1); }
+.leaf.u2 { z-index: 1; margin-left: 10px; margin-right: 10px; background: var(--leaf2); }
+.leaf-row { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--ink2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.leaf-row .d { flex: none; font-weight: 700; color: var(--pink-ink); }
+.leaf-row .ty { min-width: 0; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.leaf-row .n { flex: none; }
+.leaf-what { margin-top: 4px; font-size: 14.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.more { padding-top: 8px; text-align: center; color: var(--ink2); font-size: 12.5px; }
+.p-sum { display: flex; align-items: center; gap: 8px; color: var(--ink2); font-size: 13.5px; }
 /* 班级胶囊：设置里第 1/2/3 个班 蓝/紫/青，其他灰 */
 .cls-pill { flex: none; display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; letter-spacing: 0; background: var(--paper); color: var(--ink2); }
 .cls-pill.c1 { background: var(--c1-soft); color: var(--c1); }
@@ -154,7 +188,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .empty .big { font-family: var(--font-display); font-size: 22px; color: var(--ink); margin-bottom: 6px; }
 .notice { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--yellow-soft); color: var(--yellow); font-size: 14px; font-weight: 600; }
 
-.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(194, 65, 106, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
+.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(220, 93, 136, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
 .fab:active { transform: scale(.96); }
 
 /* ---------- 话术页 ---------- */
@@ -226,6 +260,9 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .danger.armed { background: var(--warn); border-color: var(--warn); color: var(--on-warn); }
 
 .toast { position: fixed; z-index: 40; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 16px; font-size: 14px; font-weight: 600; text-align: center; box-shadow: var(--shadow); }
+/* 带按钮的提示（撤销）：屏幕正中间，半透明磨砂淡粉，按钮是低饱和的玫瑰粉胶囊 */
+.toast.has-act { top: 50%; bottom: auto; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 28px 16px; border-radius: 22px; font-size: 16px; color: var(--glass-ink); background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.25); backdrop-filter: blur(18px) saturate(1.25); border: 1px solid var(--glass-line); box-shadow: 0 12px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-hi); }
+.toast-act { display: inline-flex; align-items: center; height: 44px; padding: 0 28px; border-radius: 999px; background: var(--glass-btn); color: var(--glass-btn-ink); font-size: 16px; font-weight: 700; }
 .toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -277,8 +314,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   /* ---------- 状态 ---------- */
   var S = {
     db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''], settingsAt: 0,
-    view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
-    form: null, formInit: '', saving: false, backArmed: false, delArmed: false
+    view: 'home', tab: 'records', filter: 'all', showDone: false, q: '', scroll: { records: 0, scripts: 0 },
+    person: null, personScroll: 0, form: null, formInit: '', saving: false, backArmed: false, delArmed: false
   };
   var app = document.getElementById('app');
   var refs = {};
@@ -349,11 +386,13 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function newestFirst(a, b) { return itemKey(a) < itemKey(b) ? 1 : -1; }
 
   var toastTimer = null;
-  function toast(msg) {
+  /* action：{ label, fn }，提示条右边多一个按钮（比如「撤销」），停久一点 */
+  function toast(msg, action) {
     var old = document.querySelector('.toast'); if (old) old.remove();
-    var t = h('div', { class: 'toast' + (S.view === 'form' ? ' at-top' : ''), role: 'status', text: msg });
+    var t = h('div', { class: 'toast' + (action ? ' has-act' : '') + (S.view === 'form' ? ' at-top' : ''), role: 'status' }, [msg,
+      action ? h('button', { class: 'toast-act', type: 'button', text: action.label, onclick: function () { clearTimeout(toastTimer); t.remove(); action.fn(); } }) : null]);
     document.body.appendChild(t);
-    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, 2600);
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, action ? 4000 : 2600);
   }
   function copy(text, btn) {
     function done() { var o = btn.textContent; btn.textContent = '复制好了'; setTimeout(function () { btn.textContent = o; }, 1400); }
@@ -412,23 +451,24 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function renderRecords(m) {
     if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '这个浏览器存不了记录（可能开了无痕浏览），现在只能看「话术」。' }));
 
-    var openN = S.items.filter(function (it) { return !it.done; }).length;
-    var defs = [['all', '全部', S.items.length], ['open', '跟进中', openN]];
-    classes().concat(S.items.some(function (it) { return it.cls === '其他'; }) ? ['其他'] : []).forEach(function (c) {
-      defs.push(['c:' + c, c, S.items.filter(function (it) { return it.cls === c; }).length]);
-    });
-    var chips = h('div', { class: 'chips', role: 'group', 'aria-label': '筛选' }, defs.map(function (d) {
-      return h('button', { class: 'chip', type: 'button', 'aria-pressed': String(S.filter === d[0]), onclick: function () { S.filter = d[0]; renderMain(); } }, [d[1], h('span', { class: 'count', text: String(d[2]) })]);
+    var q = norm(S.q).toLowerCase(), searching = !!q;
+    function browse() { if (searching) { S.q = ''; refs.search.value = ''; } renderMain(); }
+    var mine = S.items.filter(function (it) { return !!it.done === S.showDone; });
+    var defs = classes().map(function (c) { return ['c:' + c, c, mine.filter(function (it) { return it.cls === c; }).length]; });
+    defs.push(['all', '全部', mine.length]);
+    if (!defs.some(function (d) { return d[0] === S.filter; })) S.filter = 'all';
+    var chips = h('div', { class: 'chips', role: 'group', 'aria-label': '班级' }, defs.map(function (d) {
+      return h('button', { class: 'chip', type: 'button', 'aria-pressed': String(!searching && S.filter === d[0]), onclick: function () { S.filter = d[0]; browse(); } }, [d[1], h('span', { class: 'count', text: String(d[2]) })]);
     }));
-    m.appendChild(chips);
+    var sw = h('button', { class: 'sw', type: 'button', role: 'switch', 'aria-checked': String(!S.showDone), 'aria-label': '只看跟进中，关掉看已完成', onclick: function () { S.showDone = !S.showDone; browse(); } });
+    m.appendChild(h('div', { class: 'frow' + (searching ? ' searching' : '') }, [chips, sw]));
+    if (chips.scrollWidth > chips.clientWidth + 1) chips.classList.add('fade');
     if (refs.chipsLeft) { chips.scrollLeft = refs.chipsLeft; }
     chips.addEventListener('scroll', function () { refs.chipsLeft = chips.scrollLeft; }, { passive: true });
 
-    var q = norm(S.q).toLowerCase();
-    var shown = S.items.filter(function (it) {
-      if (S.filter === 'open' && it.done) return false;
-      if (S.filter.slice(0, 2) === 'c:' && it.cls !== S.filter.slice(2)) return false;
-      if (!q) return true;
+    /* 搜索：不管上面选什么，在所有记录里找 */
+    var shown = (searching ? S.items : mine).filter(function (it) {
+      if (!q) return S.filter === 'all' || it.cls === S.filter.slice(2);
       return [it.student, it.cls, typeOf(it.type).name, it.what, it.did, it.result].join(' ').toLowerCase().indexOf(q) >= 0;
     }).sort(newestFirst);
 
@@ -442,11 +482,71 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '翻本子中…' }), h('div', { text: '记过的事马上出来。' })]));
     } else if (S.dbState === 'ready' && !S.items.length) {
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「记一笔」，选好是哪种情况，话术会自动套上。' })]));
+    } else if (searching && !shown.length) {
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
     } else if (S.items.length && !shown.length) {
-      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜，或者点「全部」。' })]));
+      m.appendChild(h('div', { class: 'empty' }, S.showDone
+        ? [h('div', { class: 'big', text: '还没有结束的事' }), h('div', { text: '卡片右上角打勾，就会收到这里。' })]
+        : [h('div', { class: 'big', text: '都处理完了' }), h('div', { text: '没有要跟进的事。' })]));
     }
+    if (S.showDone && !searching) { m.appendChild(stacks(shown)); return; }
     var list = h('div', { class: 'list' });
     shown.forEach(function (it) { list.appendChild(card(it)); });
+    m.appendChild(list);
+  }
+
+  /* ---------- 已完成：按人叠成一叠（最新的在上面），点开整页看这个人 ---------- */
+  function stacks(items) {
+    var groups = Object.create(null), order = [];
+    items.forEach(function (it) {
+      var nm = norm(it.student);
+      if (!groups[nm]) { groups[nm] = []; order.push(nm); }
+      groups[nm].push(it);
+    });
+    return h('div', { class: 'stacks' }, order.map(function (nm) { return stack(nm, groups[nm]); }));
+  }
+  function leafRow(it) {
+    return h('div', { class: 'leaf-row' }, [h('span', { class: 'd', text: nice(it.date) }), h('span', { class: 'ty', text: typeOf(it.type).name }), h('span', { class: 'n', text: '第 ' + nth(it) + ' 次' })]);
+  }
+  function stack(nm, list) {
+    var top = list[0], kids = [
+      h('div', { class: 'tab' }, [top.cls ? clsPill(top.cls) : null, h('b', { text: nm || '（没写名字）' }), h('span', { class: 'n', text: list.length + ' 件' })]),
+      h('div', { class: 'leaf front' }, [leafRow(top), top.what ? h('div', { class: 'leaf-what', text: top.what }) : null])
+    ];
+    list.slice(1, 3).forEach(function (it, i) { kids.push(h('div', { class: 'leaf under u' + (i + 1) }, [leafRow(it)])); });
+    if (list.length > 3) kids.push(h('div', { class: 'more', text: '还有 ' + (list.length - 3) + ' 件更早的' }));
+    return h('button', { class: 'stack', type: 'button', 'aria-label': (nm || '没写名字') + '，已完成 ' + list.length + ' 件', onclick: function () { openPerson(nm); } }, kids);
+  }
+
+  function openPerson(nm) {
+    S.scroll.records = window.scrollY;
+    S.person = nm; S.personScroll = 0;
+    mountPerson();
+    window.scrollTo(0, 0);
+  }
+  function closePerson() {
+    S.person = null;
+    mountHome();
+    window.scrollTo(0, S.scroll.records || 0);
+  }
+  function mountPerson() {
+    S.view = 'person'; refs = {};
+    app.textContent = '';
+    app.appendChild(h('header', { class: 'formbar gutter' }, [h('div', { class: 'wrap formbar-in' }, [
+      h('button', { class: 'back', type: 'button', onclick: closePerson, text: '‹ 返回' }), h('h1', { text: S.person || '（没写名字）' }), h('span')
+    ])]));
+    refs.main = h('div', { class: 'wrap' });
+    app.appendChild(h('main', { class: 'gutter' }, [refs.main]));
+    renderPerson();
+  }
+  function renderPerson() {
+    var m = refs.main; m.textContent = '';
+    var all = S.items.filter(function (it) { return norm(it.student) === S.person; }).sort(newestFirst);
+    var done = all.filter(function (it) { return it.done; }), cls = all.length ? all[0].cls : '';
+    m.appendChild(h('div', { class: 'p-sum' }, [cls ? clsPill(cls) : null, h('span', { text: '已完成 ' + done.length + ' 件' + (all.length > done.length ? ' · 跟进中 ' + (all.length - done.length) + ' 件' : '') })]));
+    if (!done.length) m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没有已完成的了' }), h('div', { text: '取消打勾的回到了跟进中。' })]));
+    var list = h('div', { class: 'list' });
+    done.forEach(function (it) { list.appendChild(card(it)); });
     m.appendChild(list);
   }
 
@@ -488,8 +588,10 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!S.db) return;
     var next = !it.done;
     btn.setAttribute('aria-checked', String(next));
-    S.db.doc('incidents/' + it.id).update({ done: next, updatedAt: Date.now() })
-      .catch(function (e) { btn.setAttribute('aria-checked', String(!next)); toast(errText(e)); });
+    var ref = S.db.doc('incidents/' + it.id);
+    ref.update({ done: next, updatedAt: Date.now() }).then(function () {
+      if (next) toast('已结束', { label: '撤销', fn: function () { ref.update({ done: false, updatedAt: Date.now() }).catch(function (e) { toast(errText(e)); }); } });
+    }, function (e) { btn.setAttribute('aria-checked', String(!next)); toast(errText(e)); });
   }
 
   /* ---------- 话术页 ---------- */
@@ -658,6 +760,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   function openForm(it) {
     if (S.view === 'home') S.scroll[S.tab] = window.scrollY;
+    else if (S.view === 'person') S.personScroll = window.scrollY;
     var f = blankForm();
     if (it) {
       f.id = it.id; f.student = it.student || ''; f.cls = it.cls || ''; f.type = it.type || '';
@@ -671,7 +774,9 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   function closeForm(showNew) {
     S.form = null;
-    if (showNew) { S.tab = 'records'; S.filter = 'all'; S.q = ''; S.scroll.records = 0; }
+    if (S.person && !showNew) { mountPerson(); window.scrollTo(0, S.personScroll || 0); return; }
+    S.person = null;
+    if (showNew) { S.tab = 'records'; S.filter = 'all'; S.showDone = false; S.q = ''; S.scroll.records = 0; }
     mountHome();
     window.scrollTo(0, S.scroll[S.tab] || 0);
   }
@@ -879,6 +984,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   /* 数据来了：首页重画卡片，记一笔页只更新「第几次」和学生那一排，不动输入框 */
   function onData() {
     if (S.view === 'home') { syncHeader(); renderMain(); }
+    else if (S.view === 'person') renderPerson();
     else if (S.view === 'form' && S.form) { renderStudents(); renderSuggest(); }
   }
 
