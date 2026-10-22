@@ -914,8 +914,9 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     refs.pnote.hidden = !e.text.trim();
     refs.pnote.textContent = !n ? '没认出名字：一行一个名字，前面带学号也行。'
       : '认出 ' + n + ' 人：' + p.names.slice(0, 3).join('、') + (n > 4 ? ' … ' + p.names[n - 1] : n === 4 ? '、' + p.names[3] : '') + (p.dup ? '（去掉 ' + p.dup + ' 个重复）' : '');
+    /* 认出名字、而且已经有名单时才说「替换」；没粘贴、没认出时只写「用这份名单」并点不了 */
     refs.apply.disabled = !n;
-    refs.apply.textContent = have ? '用这份名单（替换现在的 ' + have + ' 人）' : '用这份名单';
+    refs.apply.textContent = n && have ? '用这份名单（替换现在的 ' + have + ' 人）' : '用这份名单';
   }
   function toggleRegular(i, nm) {
     var r = S.rosters[i]; if (!r || !S.db) return;
