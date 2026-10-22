@@ -16,56 +16,56 @@
    「记一笔」整页切过去（不弹层、不原地展开），「存」在顶栏；返回也会存。
    短选项一律一排横着滑。只有一层吸顶。 */
 :root {
-  --paper: #f1f4ee;
+  --paper: #f2f5fa;
   --card: #ffffff;
-  --ink: #22302a;
-  --ink2: #5a6961;
-  --line: #dbe3d8;
-  --board: #2c4437;
-  --board2: #3b5747;
-  --chalk: #f6f3e8;
-  --chalk2: #c6d4c9;
-  --pink: #c2416a;
+  --ink: #1f2d44;
+  --ink2: #5d6b82;
+  --line: #dce3ee;
+  --board: #5585c7;
+  --board2: #3f69a8;
+  --chalk: #ffffff;
+  --chalk2: #e3edfa;
+  --pink: #dc5d88;
   --on-pink: #ffffff;
-  --pink-soft: #fbe3ea;
-  --pink-ink: #a8345a;
+  --pink-soft: #fde6ee;
+  --pink-ink: #c4507a;
   --yellow: #805a0b;
   --yellow-soft: #f8edcf;
   --warn: #a3401c;
   --on-warn: #ffffff;
   --warn-soft: #fae0d5;
-  --good: #326a47;
-  --good-soft: #def0e3;
-  --ring: #b3bfb7; --on-good: #ffffff;
+  --good: #dc5d88;
+  --good-soft: #fde6ee;
+  --ring: #c3ccda; --on-good: #ffffff;
   --c1: #2d5fa6; --c1-soft: #dde9fb;
   --c2: #6847a8; --c2-soft: #ebe3f8;
   --c3: #1f6f69; --c3-soft: #d6efec;
-  --shadow: 0 1px 2px rgba(34, 48, 42, .06), 0 6px 18px rgba(34, 48, 42, .07);
+  --shadow: 0 1px 2px rgba(31, 45, 68, .06), 0 6px 18px rgba(31, 45, 68, .07);
   --font-display: "ZCOOL KuaiLe", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --r: 18px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #141c17; --card: #1d2822; --ink: #e6ede7; --ink2: #a1b0a6; --line: #2f3d35;
-    --board: #1f3127; --board2: #2e4437; --chalk: #f0ede2; --chalk2: #a9bbad;
+    --paper: #121821; --card: #1b2330; --ink: #e6ecf5; --ink2: #9aa8bd; --line: #2b3646;
+    --board: #2a4470; --board2: #1e3356; --chalk: #f2f6fc; --chalk2: #b9cbe6;
     --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
     --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
-    --good: #87c69b; --good-soft: #1d3125;
+    --good: #f08aa6; --good-soft: #3a2430;
     --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
-    --ring: #55665c; --on-good: #14261b;
+    --ring: #4a576a; --on-good: #2a0f18;
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #141c17; --card: #1d2822; --ink: #e6ede7; --ink2: #a1b0a6; --line: #2f3d35;
-  --board: #1f3127; --board2: #2e4437; --chalk: #f0ede2; --chalk2: #a9bbad;
+  --paper: #121821; --card: #1b2330; --ink: #e6ecf5; --ink2: #9aa8bd; --line: #2b3646;
+  --board: #2a4470; --board2: #1e3356; --chalk: #f2f6fc; --chalk2: #b9cbe6;
   --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
   --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
-  --good: #87c69b; --good-soft: #1d3125;
+  --good: #f08aa6; --good-soft: #3a2430;
   --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
-  --ring: #55665c; --on-good: #14261b;
+  --ring: #4a576a; --on-good: #2a0f18;
   --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
   color-scheme: dark;
 }
@@ -85,14 +85,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .top .wrap { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .top h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; letter-spacing: .04em; line-height: 1.25; }
 .top .sub { margin: 0; color: var(--chalk2); font-size: 12.5px; white-space: nowrap; }
-.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--board); padding-top: 8px; padding-bottom: 12px; border-radius: 0 0 22px 22px; box-shadow: 0 6px 16px rgba(20, 35, 27, .16); }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--board); padding-top: 8px; padding-bottom: 12px; border-radius: 0 0 22px 22px; box-shadow: 0 6px 16px rgba(40, 70, 120, .20); }
 .bar-in { display: flex; gap: 8px; align-items: center; }
 .search { flex: 1 1 auto; min-width: 0; height: 40px; border-radius: 999px; border: 1.5px solid transparent; background: var(--board2); color: var(--chalk); padding: 0 14px; font: inherit; font-size: 16px; -webkit-appearance: none; appearance: none; }
 .search::placeholder { color: var(--chalk2); opacity: 1; }
 .search:focus { outline: none; border-color: var(--chalk2); }
 .seg { flex: none; display: flex; gap: 2px; background: var(--board2); border-radius: 999px; padding: 3px; }
 .seg button { height: 34px; padding: 0 13px; border-radius: 999px; color: var(--chalk2); font-weight: 600; font-size: 14.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.seg button[aria-pressed="true"] { background: var(--chalk); color: var(--board); }
+.seg button[aria-pressed="true"] { background: var(--chalk); color: var(--board2); }
 
 main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
 
@@ -154,7 +154,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .empty .big { font-family: var(--font-display); font-size: 22px; color: var(--ink); margin-bottom: 6px; }
 .notice { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--yellow-soft); color: var(--yellow); font-size: 14px; font-weight: 600; }
 
-.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(194, 65, 106, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
+.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(220, 93, 136, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
 .fab:active { transform: scale(.96); }
 
 /* ---------- 话术页 ---------- */
