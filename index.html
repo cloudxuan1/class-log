@@ -47,6 +47,7 @@
   --font-display: "ZCOOL KuaiLe", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --r: 18px;
+  --scrim: rgba(31, 45, 68, .3); --fab-h: 56px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -58,7 +59,7 @@
     --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
     --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
     --glass: rgba(92, 52, 66, .5); --glass-ink: #f2cbd7; --glass-line: rgba(255, 255, 255, .14); --glass-hi: rgba(255, 255, 255, .12); --glass-shadow: rgba(0, 0, 0, .35); --glass-btn: #c98aa0; --glass-btn-ink: #2a1119;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25); --scrim: rgba(0, 0, 0, .5);
     color-scheme: dark;
   }
 }
@@ -71,7 +72,7 @@
   --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
   --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
   --glass: rgba(92, 52, 66, .5); --glass-ink: #f2cbd7; --glass-line: rgba(255, 255, 255, .14); --glass-hi: rgba(255, 255, 255, .12); --glass-shadow: rgba(0, 0, 0, .35); --glass-btn: #c98aa0; --glass-btn-ink: #2a1119;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25); --scrim: rgba(0, 0, 0, .5);
   color-scheme: dark;
 }
 
@@ -189,8 +190,26 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .empty .big { font-family: var(--font-display); font-size: 22px; color: var(--ink); margin-bottom: 6px; }
 .notice { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--yellow-soft); color: var(--yellow); font-size: 14px; font-weight: 600; }
 
-.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(220, 93, 136, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
+/* 右下角圆形「+」：点开「+」转成「×」，上面一个接一个弹出各个班（带回弹）；点「×」或空白收回。名单页上它就是返回，也画成「×」 */
+.fab { position: fixed; z-index: 24; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: var(--fab-h); height: var(--fab-h); border-radius: 50%; background: var(--pink); color: var(--on-pink); box-shadow: 0 8px 20px rgba(220, 93, 136, .32); display: inline-flex; align-items: center; justify-content: center; transition: transform .12s ease; }
 .fab:active { transform: scale(.96); }
+.fab i { flex: none; display: flex; width: 26px; height: 26px; transition: transform .34s cubic-bezier(.34, 1.56, .64, 1); }
+.fab svg { width: 100%; height: 100%; }
+.fab[aria-expanded="true"] i { transform: rotate(135deg); }
+.dial-mask { position: fixed; inset: 0; z-index: 22; background: var(--scrim); cursor: pointer; touch-action: none; animation: fade-in .2s ease both; }
+.dial { position: fixed; z-index: 23; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(32px + var(--fab-h) + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.dial-item { display: inline-flex; align-items: center; gap: 9px; height: 48px; padding: 0 22px 0 18px; border-radius: 999px; background: var(--card); color: var(--ink); font-size: 16px; font-weight: 700; box-shadow: var(--shadow); white-space: nowrap; transform-origin: 100% 50%; animation: dial-pop .4s cubic-bezier(.34, 1.56, .64, 1) both; animation-delay: calc(var(--i, 0) * 55ms); }
+.dial-item i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--ink2); }
+.dial-item.c1 i { background: var(--c1); }
+.dial-item.c2 i { background: var(--c2); }
+.dial-item.c3 i { background: var(--c3); }
+.dial.out .dial-item { animation: dial-out .14s ease-in both; animation-delay: calc(var(--j, 0) * 25ms); }
+.dial-mask.out { animation: fade-out .2s ease both; }
+.dial-mask.out, .dial.out { pointer-events: none; }
+@keyframes dial-pop { from { opacity: 0; transform: translateY(20px) scale(.55); } to { opacity: 1; transform: none; } }
+@keyframes dial-out { to { opacity: 0; transform: translateY(12px) scale(.8); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
 
 /* ---------- 话术页 ---------- */
 .sec { margin-top: 18px; }
@@ -260,14 +279,20 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .danger { margin-top: 26px; width: 100%; height: 46px; border-radius: 14px; border: 1.5px solid var(--line); color: var(--warn); font-weight: 700; background: var(--card); }
 .danger.armed { background: var(--warn); border-color: var(--warn); color: var(--on-warn); }
 
-/* ---------- 名单格子：一排 5 格平铺，常客粉色实底 ---------- */
+/* ---------- 班级名单页（整页）：一排 5 格平铺，常客在前（粉色实底）；格子高度按屏幕算（--cell-h），一屏放下 ---------- */
+/* 没有顶栏，右下角「×」就是返回：第一排躲开状态栏（加到主屏幕时），格子底下给「×」让位 */
+.rmain { padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: calc(30px + var(--fab-h) + env(safe-area-inset-bottom, 0px)); }
 .rgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--rgap, 6px); }
 .rc { position: relative; min-width: 0; height: var(--cell-h, 44px); display: flex; align-items: center; justify-content: center; padding: 0 2px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.2; transition: transform .12s ease; }
 .rc:active { transform: scale(.94); }
 .rc .nm { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rc.l4 { font-size: 12.5px; letter-spacing: -.02em; }
 .rc.l5 { font-size: 11px; letter-spacing: -.03em; }
+/* 次数挂在右上角，不占名字的宽度；格子矮的时候名字往下让一点，别和数字叠 */
+.rc .k { position: absolute; top: 2px; right: 4px; font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.rc.has-k { padding-top: clamp(0px, calc(44px - var(--cell-h, 44px)), 9px); }
 .rc.reg { background: var(--pink-soft); border-color: var(--pink-soft); color: var(--reg-ink); font-weight: 700; }
+.rc.add { background: transparent; border: 1.5px dashed var(--ring); color: var(--ink2); font-size: 13px; }
 /* 320 宽（SE 一代、放大显示）：三个字 15px 放不下，整体小一号 */
 @media (max-width: 340px) { .rc { font-size: 14px; } .rc.l4 { font-size: 11.5px; } .rc.l5 { font-size: 9.5px; } }
 /* 设置里的名单页：常客格子（固定高度）+ 粘贴框 */
@@ -284,7 +309,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .toast.has-act { top: 50%; bottom: auto; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 28px 16px; border-radius: 22px; font-size: 16px; color: var(--glass-ink); background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.25); backdrop-filter: blur(18px) saturate(1.25); border: 1px solid var(--glass-line); box-shadow: 0 12px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-hi); }
 .toast-act { display: inline-flex; align-items: center; height: 44px; padding: 0 28px; border-radius: 999px; background: var(--glass-btn); color: var(--glass-btn-ink); font-size: 16px; font-weight: 700; }
 .toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.toast:not(.has-act) { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
@@ -336,7 +362,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''], settingsAt: 0,
     view: 'home', tab: 'records', filter: 'all', showDone: false, q: '', scroll: { records: 0, scripts: 0 },
     person: null, personScroll: 0, form: null, formInit: '', saving: false, backArmed: false, delArmed: false,
-    rosters: [null, null, null], rosterEdit: null
+    rosters: [null, null, null], roster: null, rosterScroll: 0, rosterEdit: null, dial: false
   };
   var app = document.getElementById('app');
   var refs = {};
@@ -433,7 +459,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   /* ---------- 首页：顶部只建一次，打字时不重建搜索框 ---------- */
   function mountHome() {
-    S.view = 'home'; refs = {};
+    S.view = 'home'; S.dial = false; refs = {};
     app.textContent = '';
     var search = h('input', { class: 'search', type: 'search', autocomplete: 'off', enterkeyhint: 'search', 'aria-label': '搜索' });
     search.value = S.q;
@@ -446,10 +472,117 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     app.appendChild(h('div', { class: 'bar gutter' }, [h('div', { class: 'wrap bar-in' }, [search, h('div', { class: 'seg', role: 'group', 'aria-label': '切换' }, [refs.tabRec, refs.tabScr])])]));
     refs.main = h('div', { class: 'wrap' });
     app.appendChild(h('main', { class: 'gutter' }, [refs.main]));
-    refs.fab = h('button', { class: 'fab', type: 'button', onclick: function () { openForm(null); }, text: '＋ 记一笔' });
+    refs.fab = fabButton(function () { if (S.dial) closeDial(); else openDial(); });
     app.appendChild(refs.fab);
-    syncHeader(); renderMain();
+    syncFab(); syncHeader(); renderMain();
   }
+
+  /* ---------- 「+」：点开弹出设置里填了名字的班；有名单进名单页，没名单直接记一笔；一个班都没填就直接记一笔 ---------- */
+  var PLUS_SVG = '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M13 5v16M5 13h16"/></svg>';
+  function fabButton(onclick) {
+    var b = h('button', { class: 'fab', type: 'button', onclick: onclick }, [h('i')]);
+    b.firstChild.innerHTML = PLUS_SVG;
+    return b;
+  }
+  /* 弹开时、在名单页上（它就是返回）画成「×」 */
+  function syncFab() {
+    var b = refs.fab; if (!b) return;
+    b.setAttribute('aria-expanded', String(S.view === 'roster' || S.dial));
+    b.setAttribute('aria-label', S.view === 'roster' ? '返回' : S.dial ? '收起' : '记一笔');
+  }
+  /* 设置里填了名字的班；i 是第几个班（名单按这个位置存） */
+  function myClasses() {
+    var out = [];
+    S.classes.forEach(function (c, i) { c = norm(c); if (c && c !== '其他' && !out.some(function (o) { return o.name === c; })) out.push({ name: c, i: i }); });
+    return out;
+  }
+  function reduceMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  function openDial() {
+    var list = myClasses();
+    if (!list.length) { openForm(null); return; }
+    S.dial = true;
+    var n = list.length;
+    refs.mask = h('div', { class: 'dial-mask', onclick: function () { closeDial(); } });
+    /* --i：离「+」最近的先弹；--j：收回时从上往下 */
+    refs.dial = h('div', { class: 'dial', role: 'group', 'aria-label': '选班级' }, list.map(function (c, k) {
+      return h('button', { class: 'dial-item c' + (c.i + 1), type: 'button', style: '--i:' + (n - 1 - k) + ';--j:' + k, onclick: function () { pickClass(c); } }, [h('i'), c.name]);
+    }));
+    app.appendChild(refs.mask); app.appendChild(refs.dial);
+    syncFab();
+  }
+  function closeDial(now) {
+    if (!S.dial) return;
+    S.dial = false; syncFab();
+    var mask = refs.mask, dial = refs.dial; refs.mask = refs.dial = null;
+    if (now || reduceMotion()) { mask.remove(); dial.remove(); return; }
+    mask.classList.add('out'); dial.classList.add('out');
+    setTimeout(function () { mask.remove(); dial.remove(); }, 260);
+  }
+  function pickClass(c) {
+    closeDial(true);
+    if (hasRoster(c.i)) openRoster(c.i);
+    else openForm(null, { cls: c.name });
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && S.dial) closeDial(); });
+
+  /* ---------- 班级名单页（整页）：常客在前（次数多的在前，一样多看谁最近），其余按学号；最后一格「写名字」 ---------- */
+  function openRoster(i) {
+    if (S.view === 'home') S.scroll[S.tab] = window.scrollY;
+    S.roster = i; S.rosterScroll = 0;
+    mountRoster();
+    window.scrollTo(0, 0);
+  }
+  function closeRoster() {
+    S.roster = null;
+    mountHome();
+    window.scrollTo(0, S.scroll[S.tab] || 0);
+  }
+  /* 不写是哪个班、没有顶栏；右下角「×」返回首页 */
+  function mountRoster() {
+    S.view = 'roster'; refs = {};
+    app.textContent = '';
+    refs.main = h('div', { class: 'wrap' });
+    refs.rmain = h('main', { class: 'rmain gutter' }, [refs.main]);
+    app.appendChild(refs.rmain);
+    refs.fab = fabButton(closeRoster); app.appendChild(refs.fab); syncFab();
+    renderRoster();
+  }
+  /* 每个名字一共记了几次、最近一次的排序 key；和 nth() 一样按名字在所有记录里数（跟进中、已完成都算） */
+  function tally() {
+    var m = Object.create(null);
+    S.items.forEach(function (it) {
+      var nm = norm(it.student); if (!nm) return;
+      var k = itemKey(it), t = m[nm] || (m[nm] = { n: 0, last: '' });
+      t.n++; if (k > t.last) t.last = k;
+    });
+    return m;
+  }
+  function renderRoster() {
+    var m = refs.main, i = S.roster, r = S.rosters[i], cls = norm(S.classes[i]);
+    var names = r ? r.names : [], regs = r ? r.regulars : [], t = tally(), top = [], rest = [];
+    names.forEach(function (nm, k) { (regs.indexOf(nm) >= 0 ? top : rest).push({ nm: nm, k: k, t: t[nm] || { n: 0, last: '' } }); });
+    top.sort(function (a, b) { return b.t.n - a.t.n || (a.t.last < b.t.last ? 1 : a.t.last > b.t.last ? -1 : 0) || a.k - b.k; });
+    var grid = h('div', { class: 'rgrid', role: 'group', 'aria-label': cls + '名单' });
+    top.forEach(function (o) { grid.appendChild(nameCell(o.nm, true, o.t.n, function () { openForm(null, { student: o.nm, cls: cls }); })); });
+    rest.forEach(function (o) { grid.appendChild(nameCell(o.nm, false, 0, function () { openForm(null, { student: o.nm, cls: cls }); })); });
+    grid.appendChild(h('button', { class: 'rc add', type: 'button', onclick: function () { openForm(null, { cls: cls, focus: true }); } }, [h('span', { class: 'nm', text: '写名字' })]));
+    m.textContent = ''; m.appendChild(grid);
+    refs.grid = grid;
+    fitRoster();
+  }
+  /* 格子高度 = (屏幕剩下的高度 − 缝) ÷ 行数，32–60px；矮屏缝从 6px 收到 4px；还放不下才滑 */
+  function fitRoster() {
+    var g = refs.grid; if (!g || S.view !== 'roster') return;
+    var rows = Math.ceil(g.children.length / 5);
+    var top = g.getBoundingClientRect().top + window.scrollY;
+    var pb = parseFloat(getComputedStyle(refs.rmain).paddingBottom) || 0;
+    var room = window.innerHeight - top - pb;
+    function fit(gap) { return Math.floor((room - gap * (rows - 1)) / rows); }
+    var gap = fit(6) < 38 ? 4 : 6, cell = fit(gap);
+    g.style.setProperty('--rgap', gap + 'px');
+    g.style.setProperty('--cell-h', Math.max(32, Math.min(60, cell)) + 'px');
+  }
+  window.addEventListener('resize', fitRoster);
   function switchTab(t) {
     if (S.tab === t) return;
     S.scroll[S.tab] = window.scrollY;
@@ -502,7 +635,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (S.dbState === 'loading') {
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '翻本子中…' }), h('div', { text: '记过的事马上出来。' })]));
     } else if (S.dbState === 'ready' && !S.items.length) {
-      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「记一笔」，选好是哪种情况，话术会自动套上。' })]));
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「+」记一笔，选好是哪种情况，话术会自动套上。' })]));
     } else if (searching && !shown.length) {
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
     } else if (S.items.length && !shown.length) {
@@ -833,9 +966,10 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       onRoster(); throw e;
     });
   }
-  /* 名单变了：设置里的名单页、设置（没在打字时）跟着变 */
+  /* 名单变了：名单页、设置里的名单页、设置（没在打字时）跟着变 */
   function onRoster() {
-    if (S.view === 'rosterEdit') renderRosterEdit();
+    if (S.view === 'roster') renderRoster();
+    else if (S.view === 'rosterEdit') renderRosterEdit();
     else if (S.view === 'home' && S.tab === 'scripts') {
       var a = document.activeElement;
       if (!(a && a.tagName === 'INPUT' && refs.main && refs.main.contains(a))) renderMain();
@@ -942,22 +1076,28 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function blankForm() { return { id: null, student: '', cls: '', type: '', date: today(), what: '', did: '', result: '', done: false, createdAt: 0, autoDid: '' }; }
   function formSig(f) { return JSON.stringify([norm(f.student), f.cls, f.type, f.date, f.what.trim(), f.did.trim(), f.result.trim(), !!f.done]); }
 
-  function openForm(it) {
+  /* preset：从名单页 / 「+」进来时先填好 { student, cls }，focus 为 true 就直接打开键盘写名字 */
+  function openForm(it, preset) {
     if (S.view === 'home') S.scroll[S.tab] = window.scrollY;
     else if (S.view === 'person') S.personScroll = window.scrollY;
+    else if (S.view === 'roster') S.rosterScroll = window.scrollY;
     var f = blankForm();
     if (it) {
       f.id = it.id; f.student = it.student || ''; f.cls = it.cls || ''; f.type = it.type || '';
       f.date = it.date || today(); f.what = it.what || ''; f.did = it.did || ''; f.result = it.result || '';
       f.done = !!it.done; f.createdAt = it.createdAt || 0;
+    } else if (preset) {
+      f.student = preset.student || ''; f.cls = preset.cls || '';
     }
     S.form = f; S.formInit = formSig(f); S.backArmed = false; S.delArmed = false; S.saving = false;
     mountForm();
     window.scrollTo(0, 0);
+    if (preset && preset.focus) refs.student.focus();
   }
 
   function closeForm(showNew) {
     S.form = null;
+    if (S.roster != null) { mountRoster(); window.scrollTo(0, S.rosterScroll || 0); return; }
     if (S.person && !showNew) { mountPerson(); window.scrollTo(0, S.personScroll || 0); return; }
     S.person = null;
     if (showNew) { S.tab = 'records'; S.filter = 'all'; S.showDone = false; S.q = ''; S.scroll.records = 0; }
@@ -1169,6 +1309,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function onData() {
     if (S.view === 'home') { syncHeader(); renderMain(); }
     else if (S.view === 'person') renderPerson();
+    else if (S.view === 'roster') renderRoster();
     else if (S.view === 'form' && S.form) { renderStudents(); renderSuggest(); }
   }
 
