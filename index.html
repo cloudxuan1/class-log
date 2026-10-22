@@ -290,13 +290,16 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .rc .nm { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rc.l4 { font-size: 12.5px; letter-spacing: -.02em; }
 .rc.l5 { font-size: 11px; letter-spacing: -.03em; }
+/* 六个字以上：从中间折成两行（上面那行不比下面长，躲开右上角的次数），不截成「…」 */
+.rc.l6 { font-size: 11px; letter-spacing: -.03em; line-height: 1.05; }
 /* 次数挂在右上角，不占名字的宽度；格子矮的时候名字往下让一点，别和数字叠 */
 .rc .k { position: absolute; top: 2px; right: 4px; font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
 .rc.has-k { padding-top: clamp(0px, calc(44px - var(--cell-h, 44px)), 9px); }
+.rc.l6.has-k { padding-top: clamp(0px, calc(60px - var(--cell-h, 44px)), 11px); }
 .rc.reg { background: var(--pink-soft); border-color: var(--pink-soft); color: var(--reg-ink); font-weight: 700; }
 .rc.add { background: transparent; border: 1.5px dashed var(--ring); color: var(--ink2); font-size: 13px; }
 /* 320 宽（SE 一代、放大显示）：三个字 15px 放不下，整体小一号 */
-@media (max-width: 340px) { .rc { font-size: 14px; } .rc.l4 { font-size: 11.5px; } .rc.l5 { font-size: 9.5px; } }
+@media (max-width: 340px) { .rc { font-size: 14px; } .rc.l4 { font-size: 11.5px; } .rc.l5, .rc.l6 { font-size: 9.5px; } }
 /* 设置里的名单页：常客格子（固定高度）+ 粘贴框 */
 .rgrid.edit .rc { height: 44px; }
 .reg-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 2px 0 8px; color: var(--ink2); font-size: 13.5px; }
@@ -995,12 +998,13 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       if (!(a && a.tagName === 'INPUT' && refs.main && refs.main.contains(a))) renderMain();
     }
   }
-  /* 一格一个名字：四个字、五个字以上的字小一号；reg = 常客；n = 记过几次（0 不显示）；pressable = 设置里点一下切换常客 */
+  /* 一格一个名字：四个字、五个字的字小一号，六个字以上折成两行；reg = 常客；n = 记过几次（0 不显示）；pressable = 设置里点一下切换常客 */
   function nameCell(nm, reg, n, onclick, pressable) {
-    var len = Array.from(nm).length;
-    return h('button', { class: 'rc' + (reg ? ' reg' : '') + (n ? ' has-k' : '') + (len >= 5 ? ' l5' : len === 4 ? ' l4' : ''), type: 'button', onclick: onclick,
+    var ch = Array.from(nm), len = ch.length, cut = Math.floor(len / 2);
+    return h('button', { class: 'rc' + (reg ? ' reg' : '') + (n ? ' has-k' : '') + (len >= 6 ? ' l6' : len === 5 ? ' l5' : len === 4 ? ' l4' : ''), type: 'button', onclick: onclick,
       'aria-pressed': pressable ? String(reg) : null, 'aria-label': nm + (reg ? '，常客' : '') + (n ? '，记过 ' + n + ' 次' : '') }, [
-      h('span', { class: 'nm', text: nm }), n ? h('span', { class: 'k', text: String(n) }) : null
+      len >= 6 ? h('span', { class: 'nm' }, [ch.slice(0, cut).join(''), h('br'), ch.slice(cut).join('')]) : h('span', { class: 'nm', text: nm }),
+      n ? h('span', { class: 'k', text: String(n) }) : null
     ]);
   }
 
