@@ -310,6 +310,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .toast.has-act { top: 50%; bottom: auto; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 28px 16px; border-radius: 22px; font-size: 16px; color: var(--glass-ink); background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.25); backdrop-filter: blur(18px) saturate(1.25); border: 1px solid var(--glass-line); box-shadow: 0 12px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-hi); }
 .toast-act { display: inline-flex; align-items: center; height: 44px; padding: 0 28px; border-radius: 999px; background: var(--glass-btn); color: var(--glass-btn-ink); font-size: 16px; font-weight: 700; }
 .toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
+/* 名单页：放到右下角「×」左边那条空地上（和「×」一样高），不盖最后一排格子 */
+.toast.at-fab { bottom: calc(18px + var(--fab-h) / 2 + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 50%); max-width: calc(100% - 2 * (30px + var(--fab-h) + env(safe-area-inset-right, 0px))); }
 .toast:not(.has-act) { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
@@ -437,7 +439,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   /* action：{ label, fn }，提示条右边多一个按钮（比如「撤销」），停久一点 */
   function toast(msg, action) {
     var old = document.querySelector('.toast'); if (old) old.remove();
-    var t = h('div', { class: 'toast' + (action ? ' has-act' : '') + (S.view === 'form' ? ' at-top' : ''), role: 'status' }, [msg,
+    var t = h('div', { class: 'toast' + (action ? ' has-act' : '') + (S.view === 'form' ? ' at-top' : S.view === 'roster' && !action ? ' at-fab' : ''), role: 'status' }, [msg,
       action ? h('button', { class: 'toast-act', type: 'button', text: action.label, onclick: function () { clearTimeout(toastTimer); t.remove(); action.fn(); } }) : null]);
     document.body.appendChild(t);
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, action ? 4000 : 2600);
