@@ -1,5 +1,13 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>事件小本本</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="小本本">
+<link rel="apple-touch-icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap">
@@ -155,6 +163,15 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .stepper button:disabled { opacity: .3; cursor: default; }
 .stepper output { min-width: 2em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fine { color: var(--ink2); font-size: 13px; margin-top: 10px; }
+.set-part { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.cls-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.cls-inputs .input { height: 40px; padding: 0 12px; }
+.input:disabled { opacity: .55; }
+.btn-row { display: flex; gap: 8px; }
+.btn { position: relative; flex: 1 1 0; min-width: 0; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-weight: 600; font-size: 14.5px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.btn:disabled, .btn.off { opacity: .55; pointer-events: none; }
+.btn:has(:focus-visible) { outline: 2px solid var(--pink); outline-offset: 2px; }
+.file-in { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
 /* ---------- 记一笔（整页） ---------- */
 .formbar { position: sticky; top: 0; z-index: 20; background: var(--board); color: var(--chalk); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
@@ -191,7 +208,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
-
+</head>
+<body>
 <div id="app"></div>
 
 <script>
@@ -234,11 +252,10 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     ['收尾', '行，就到这儿。回去吧。'],
     ['自己急了', '这事下课再说。']
   ];
-  var DEFAULT_CLASSES = ['1班', '2班', '3班'];
 
   /* ---------- 状态 ---------- */
   var S = {
-    db: null, dbState: 'loading', canWrite: true, items: [], escalateAt: 3,
+    db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''], settingsAt: 0,
     view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
     form: null, formInit: '', saving: false, backArmed: false, delArmed: false
   };
@@ -292,7 +309,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     return '第 ' + E + ' 次起';
   }
   function classes() {
-    var set = DEFAULT_CLASSES.slice();
+    var set = [];
+    S.classes.forEach(function (c) { c = norm(c); if (c && c !== '其他' && set.indexOf(c) < 0) set.push(c); });
     S.items.forEach(function (it) { if (it.cls && it.cls !== '其他' && set.indexOf(it.cls) < 0) set.push(it.cls); });
     return set;
   }
@@ -326,17 +344,9 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     }
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
   }
-  function retry(fn) {
-    return fn().catch(function (e) {
-      if (e && e.code === 'unavailable') return new Promise(function (r) { setTimeout(r, 400 + Math.random() * 600); }).then(fn);
-      throw e;
-    });
-  }
   function errText(e) {
-    var c = e && e.code;
-    if (c === 'quota_exceeded') return '本子满了，删掉一些旧的再存';
-    if (c === 'invalid_argument' || c === 'not_granted' || c === 'revoked') return '存不了：这本子只有主人能记';
-    return '没存上，网络不好，等一下再点一次';
+    if (e && e.name === 'QuotaExceededError') return '本子满了，删掉一些旧的再存';
+    return '没存上，再点一次试试';
   }
   function keepScrollLeft(row, build) { var sl = row.scrollLeft; row.textContent = ''; build(); row.scrollLeft = sl; }
 
@@ -371,7 +381,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     refs.tabRec.setAttribute('aria-pressed', String(S.tab === 'records'));
     refs.tabScr.setAttribute('aria-pressed', String(S.tab === 'scripts'));
     refs.search.placeholder = S.tab === 'records' ? '搜名字、事情' : '搜话术';
-    refs.fab.hidden = !(S.dbState === 'ready' && S.canWrite && S.tab === 'records');
+    refs.fab.hidden = !(S.dbState === 'ready' && S.tab === 'records');
   }
   function renderMain() {
     var m = refs.main; m.textContent = '';
@@ -379,8 +389,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   }
 
   function renderRecords(m) {
-    if (S.dbState === 'readonly') { m.appendChild(h('div', { class: 'notice', text: '这本小本本只有主人能看。' })); return; }
-    if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '要在 claude.ai 登录后打开这一页，才能记和存。现在只能看「话术」。' }));
+    if (S.dbState === 'none') m.appendChild(h('div', { class: 'notice', text: '这个浏览器存不了记录（可能开了无痕浏览），现在只能看「话术」。' }));
 
     var openN = S.items.filter(function (it) { return !it.done; }).length;
     var defs = [['all', '全部', S.items.length], ['open', '跟进中', openN]];
@@ -506,36 +515,106 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!any) m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
 
     if (!q) {
-      var can = S.dbState === 'ready' && S.canWrite;
+      var can = S.dbState === 'ready';
+      var clsInputs = [0, 1, 2].map(function (i) {
+        var el = h('input', { class: 'input', type: 'text', placeholder: '班级 ' + (i + 1), 'aria-label': '第 ' + (i + 1) + ' 个班', autocomplete: 'off', enterkeyhint: 'done', disabled: !can });
+        el.value = S.classes[i];
+        el.addEventListener('input', function () { S.classes[i] = el.value; saveSettings(); });
+        el.addEventListener('blur', flushSettings);
+        el.addEventListener('keydown', function (e) { if (e.key === 'Enter') el.blur(); });
+        return el;
+      });
+      var fileIn = h('input', { class: 'file-in', type: 'file', disabled: !can });
+      fileIn.addEventListener('change', function () { var f = fileIn.files && fileIn.files[0]; if (f) importBackup(f); fileIn.value = ''; });
       m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '设置' }), h('div', { class: 'box' }, [
         h('div', { class: 'setting' }, [h('span', { text: '同一个学生第几次交给班主任' }), h('div', { class: 'stepper' }, [
           h('button', { type: 'button', 'aria-label': '少一次', disabled: !can || E <= 2, text: '−', onclick: function () { setEscalate(E - 1); } }),
           h('output', { text: String(E) }),
           h('button', { type: 'button', 'aria-label': '多一次', disabled: !can || E >= 6, text: '+', onclick: function () { setEscalate(E + 1); } })
         ])]),
-        h('div', { class: 'fine', text: '记录只有你看得到；分享给别人，就算对方能打开这一页，看到的也是空本子。' })
+        h('div', { class: 'set-part' }, [h('span', { text: '我的三个班' }), h('div', { class: 'cls-inputs' }, clsInputs)]),
+        h('div', { class: 'set-part btn-row' }, [
+          h('button', { class: 'btn', type: 'button', disabled: !can, text: '导出备份', onclick: exportBackup }),
+          h('label', { class: 'btn' + (can ? '' : ' off') }, [fileIn, '导入'])
+        ]),
+        h('div', { class: 'fine', text: '记录只存在这台设备上，不上传，别人打开网址看不到。换手机前先导出备份；导入只加不删。' })
       ])]));
     }
   }
 
-  /* 连点只存最后一下，同一时间只写一次 */
-  var escTimer = null, escWriting = false, escPending = null;
-  function escBusy() { return !!escTimer || escWriting; }
-  function setEscalate(n) {
-    S.escalateAt = n; renderMain();
-    clearTimeout(escTimer);
-    escTimer = setTimeout(function () { escTimer = null; writeEscalate(n); }, 500);
+  /* 设置连着改只存最后一下，同一时间只写一次；每次把所有设置一起存。离开输入框、切走页面马上存 */
+  var setTimer = null, setWriting = false, setPending = false;
+  function settingsBusy() { return !!setTimer || setWriting; }
+  function setEscalate(n) { S.escalateAt = n; renderMain(); saveSettings(); }
+  function saveSettings() {
+    clearTimeout(setTimer);
+    setTimer = setTimeout(function () { setTimer = null; writeSettings(); }, 500);
   }
-  function writeEscalate(n) {
+  function flushSettings() { if (setTimer) { clearTimeout(setTimer); setTimer = null; writeSettings(); } }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) flushSettings(); });
+  function writeSettings() {
     if (!S.db) return;
-    if (escWriting) { escPending = n; return; }
-    escWriting = true;
-    retry(function () { return S.db.doc('settings/main').set({ escalateAt: n }); })
+    if (setWriting) { setPending = true; return; }
+    setWriting = true; S.settingsAt = Date.now();
+    S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt })
       .catch(function (e) { toast(errText(e)); })
       .then(function () {
-        escWriting = false;
-        if (escPending != null) { var p = escPending; escPending = null; if (p !== n) writeEscalate(p); }
+        setWriting = false;
+        if (setPending) { setPending = false; writeSettings(); }
       });
+  }
+
+  /* ---------- 备份：导出一个 JSON（iPhone 走分享面板，能「存储到文件」；别处直接下载）；
+     导入按 id 合并：没有的加上，同一个 id 留 updatedAt 新的那份，不删已有的 ---------- */
+  function exportBackup() {
+    var data = { app: 'class-log', version: 1, exportedAt: new Date().toISOString(),
+      settings: { escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt }, incidents: S.items };
+    var file = new File([JSON.stringify(data, null, 1)], '小本本备份-' + today() + '.json', { type: 'application/json' });
+    var done = '导出了 ' + S.items.length + ' 条';
+    if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).then(function () { toast(done); }, function (e) { if (!e || e.name !== 'AbortError') download(file); });
+      return;
+    }
+    download(file); toast(done);
+  }
+  function download(file) {
+    var url = URL.createObjectURL(file), a = h('a', { href: url, download: file.name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+  }
+  function str(v) { return v == null ? '' : String(v); }
+  function cleanItem(x) {
+    return { student: norm(x.student), cls: str(x.cls), type: str(x.type), date: /^\d{4}-\d\d-\d\d$/.test(x.date) ? x.date : '',
+      what: str(x.what), did: str(x.did), result: str(x.result), done: !!x.done, createdAt: +x.createdAt || 0, updatedAt: +x.updatedAt || 0 };
+  }
+  function importBackup(file) {
+    file.text().then(function (text) {
+      var o; try { o = JSON.parse(text); } catch (e) { o = null; }
+      if (!o || o.app !== 'class-log' || !Array.isArray(o.incidents)) { toast('这不是小本本的备份文件'); return; }
+      var have = Object.create(null), r = { added: 0, updated: 0, same: 0 }, b = S.db.batch();
+      S.items.forEach(function (it) { have[it.id] = it; });
+      o.incidents.forEach(function (x) {
+        if (!x || typeof x.id !== 'string' || !x.id) return;
+        var d = cleanItem(x), old = have[x.id];
+        if (!old) r.added++;
+        else if (d.updatedAt > (+old.updatedAt || 0)) r.updated++;
+        else { r.same++; return; }
+        have[x.id] = d; b.set(S.db.doc('incidents/' + x.id), d);
+      });
+      var st = o.settings;
+      if (st && +st.updatedAt > S.settingsAt && !settingsBusy()) {
+        var v = +st.escalateAt;
+        b.set(S.db.doc('settings/main'), { escalateAt: v >= 2 && v <= 6 ? v : 3, updatedAt: +st.updatedAt,
+          classes: [0, 1, 2].map(function (i) { return Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }) });
+      }
+      return b.commit().then(function () {
+        var parts = [];
+        if (r.added) parts.push('新加 ' + r.added + ' 条');
+        if (r.updated) parts.push('更新 ' + r.updated + ' 条');
+        if (r.same) parts.push(r.same + ' 条本来就有');
+        toast('导入好了' + (parts.length ? '：' + parts.join('，') : ''));
+      });
+    }).catch(function (e) { toast(errText(e)); });
   }
 
   /* ---------- 记一笔（整页） ---------- */
@@ -683,6 +762,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       classes().concat(['其他']).forEach(function (c) {
         row.appendChild(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(f.cls === c), onclick: function () { f.cls = f.cls === c ? '' : c; renderClasses(); } }, [c]));
       });
+      if (!S.classes.some(norm)) row.appendChild(h('span', { class: 'chip-note', text: '你的班在「话术」页最下面的设置里填' }));
     });
   }
   function renderTypes() {
@@ -713,15 +793,15 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (!f || S.saving) return;
     if (!norm(f.student)) { toast('先写名字'); refs.student.focus(); return; }
     if (!f.type) { toast('选一下是哪种情况'); return; }
-    if (!S.db) { toast('现在存不了：要在 claude.ai 登录后打开'); return; }
+    if (!S.db) { toast('这个浏览器存不了记录'); return; }
     var body = { student: norm(f.student), cls: f.cls, type: f.type, date: f.date || today(), what: f.what.trim(), did: f.did.trim(), result: f.result.trim(), done: !!f.done, updatedAt: Date.now() };
     var isNew = !f.id, p;
     if (isNew) {
       var ref = S.db.collection('incidents').doc();
       body.createdAt = Date.now();
-      p = retry(function () { return ref.set(body); });
+      p = ref.set(body);
     } else {
-      p = retry(function () { return S.db.doc('incidents/' + f.id).update(body); });
+      p = S.db.doc('incidents/' + f.id).update(body);
     }
     S.saving = true; refs.save.disabled = true; refs.save.textContent = '存着…';
     p.then(function () {
@@ -755,7 +835,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     }
     if (!S.db) return;
     btn.disabled = true;
-    retry(function () { return S.db.doc('incidents/' + f.id).delete(); }).then(function () {
+    S.db.doc('incidents/' + f.id).delete().then(function () {
       if (S.form !== f) return;
       closeForm(false); toast('删掉了');
     }, function (e) { btn.disabled = false; toast(errText(e)); });
@@ -767,33 +847,131 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     else if (S.view === 'form' && S.form) { renderStudents(); renderSuggest(); }
   }
 
+  /* ---------- 本地存储：IndexedDB 库 class-log，一个集合一个 object store，key 是文档 id。
+     接口照 claude.ai 的 db 写（collection/doc/set/update/delete/onSnapshot）；
+     写完先把新数据推给所有 onSnapshot 再算存好，别的标签页用 BroadcastChannel 通知。 ---------- */
+  function openLocalDb() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open('class-log', 1);
+      req.onupgradeneeded = function () {
+        ['incidents', 'settings'].forEach(function (n) { if (!req.result.objectStoreNames.contains(n)) req.result.createObjectStore(n); });
+      };
+      req.onsuccess = function () { resolve(localDb(req.result)); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function localDb(idb) {
+    var subs = [], chan = null;
+    idb.onversionchange = function () { idb.close(); };
+    try { chan = new BroadcastChannel('class-log'); chan.onmessage = function (e) { notify(e.data); }; } catch (e) {}
+
+    function tx(cols, mode, work) {
+      return new Promise(function (resolve, reject) {
+        var t = idb.transaction(cols, mode);
+        work(t);
+        t.oncomplete = function () { resolve(); };
+        t.onabort = t.onerror = function () { reject(t.error); };
+      });
+    }
+    function read(col, id) {
+      var docs = [], one;
+      return tx(col, 'readonly', function (t) {
+        var st = t.objectStore(col);
+        if (id) { var g = st.get(id); g.onsuccess = function () { one = g.result; }; return; }
+        st.openCursor().onsuccess = function (e) {
+          var c = e.target.result; if (!c) return;
+          docs.push({ id: c.key, v: c.value }); c.continue();
+        };
+      }).then(function () {
+        if (id) return { id: id, exists: one !== undefined, data: function () { return one; } };
+        return { docs: docs.map(function (d) { return { id: d.id, data: function () { return d.v; } }; }) };
+      });
+    }
+    /* 同一个监听连着读好几次时，只送最后一次的结果 */
+    function deliver(s) {
+      var n = ++s.seq;
+      return read(s.col, s.id).then(function (snap) { if (!s.off && n === s.seq) s.fn(snap); }, function (e) { if (!s.off && s.err) s.err(e); });
+    }
+    function notify(col) { return Promise.all(subs.filter(function (s) { return s.col === col; }).map(deliver)); }
+    function changed(cols) {
+      return Promise.all(cols.map(function (col) { if (chan) chan.postMessage(col); return notify(col); }));
+    }
+    function write(col, work) {
+      return tx(col, 'readwrite', function (t) { work(t.objectStore(col)); }).then(function () { return changed([col]); });
+    }
+    function listen(col, id, fn, err) {
+      var s = { col: col, id: id, fn: fn, err: err, seq: 0 };
+      subs.push(s); deliver(s);
+      return function () { s.off = true; subs.splice(subs.indexOf(s), 1); };
+    }
+    function newId() {
+      var a = new Uint8Array(10); crypto.getRandomValues(a);
+      return Array.prototype.map.call(a, function (b) { return (b + 256).toString(16).slice(1); }).join('');
+    }
+    function ref(col, id) {
+      return {
+        id: id, path: col + '/' + id,
+        set: function (data) { return write(col, function (st) { st.put(data, id); }); },
+        /* 合并进已有的；这一笔已经被别的标签页删了，就按这次的内容重新存 */
+        update: function (data) {
+          return write(col, function (st) {
+            var g = st.get(id);
+            g.onsuccess = function () { st.put(Object.assign({}, g.result, data), id); };
+          });
+        },
+        delete: function () { return write(col, function (st) { st.delete(id); }); },
+        onSnapshot: function (fn, err) { return listen(col, id, fn, err); }
+      };
+    }
+    return {
+      collection: function (col) {
+        return { doc: function (id) { return ref(col, id || newId()); }, onSnapshot: function (fn, err) { return listen(col, null, fn, err); } };
+      },
+      doc: function (path) { var i = path.indexOf('/'); return ref(path.slice(0, i), path.slice(i + 1)); },
+      /* 好几条一次写完（导入用），写完每个集合只通知一次 */
+      batch: function () {
+        var ops = [];
+        return {
+          set: function (r, data) { var i = r.path.indexOf('/'); ops.push([r.path.slice(0, i), r.id, data]); },
+          commit: function () {
+            var cols = [];
+            ops.forEach(function (o) { if (cols.indexOf(o[0]) < 0) cols.push(o[0]); });
+            if (!cols.length) return Promise.resolve();
+            return tx(cols, 'readwrite', function (t) { ops.forEach(function (o) { t.objectStore(o[0]).put(o[2], o[1]); }); })
+              .then(function () { return changed(cols); });
+          }
+        };
+      }
+    };
+  }
+
   /* ---------- 接上数据库 ---------- */
   mountHome();
+  try {
+    navigator.storage.persisted().then(function (yes) { return yes || navigator.storage.persist(); }).catch(function () {});
+  } catch (e) {}
   (async function () {
-    var c = window.claude, db = null, user = null;
-    try { db = c && typeof c.use === 'function' ? await c.use('db') : null; } catch (e) { db = null; }
+    var db = null;
+    try { db = await openLocalDb(); } catch (e) { db = null; }
     if (!db) { S.dbState = 'none'; onData(); return; }
-    try { user = await c.use('user'); } catch (e) { user = null; }
-    if (user) {
-      var ok = true;
-      try { ok = await user.canEdit(); } catch (e) { ok = true; }
-      if (ok === false) { S.dbState = 'readonly'; S.canWrite = false; onData(); return; }
-    }
     S.db = db;
     db.collection('incidents').onSnapshot(function (snap) {
       S.items = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data() || {}); });
       S.dbState = 'ready'; onData();
-    }, function (e) {
-      if (e && (e.code === 'revoked' || e.code === 'not_granted')) { S.db = null; S.dbState = 'none'; }
-      else { S.dbState = 'ready'; toast('读记录出错了，刷新一下试试'); }
+    }, function () {
+      S.dbState = 'ready'; toast('读记录出错了，刷新一下试试');
       onData();
     });
     db.doc('settings/main').onSnapshot(function (snap) {
-      if (escBusy()) return;
+      if (settingsBusy()) return;
       var d = snap.exists ? snap.data() : null, v = d ? +d.escalateAt : 3;
+      S.settingsAt = d && +d.updatedAt || 0;
       var next = v >= 2 && v <= 6 ? v : 3;
-      if (next !== S.escalateAt) { S.escalateAt = next; onData(); }
+      var cls = [0, 1, 2].map(function (i) { return d && Array.isArray(d.classes) && d.classes[i] ? String(d.classes[i]) : ''; });
+      if (next !== S.escalateAt || cls.join('\n') !== S.classes.join('\n')) { S.escalateAt = next; S.classes = cls; onData(); }
     }, function () {});
   })();
 })();
 </script>
+</body>
+</html>
