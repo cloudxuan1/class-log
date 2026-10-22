@@ -524,7 +524,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
         el.addEventListener('keydown', function (e) { if (e.key === 'Enter') el.blur(); });
         return el;
       });
-      var fileIn = h('input', { class: 'file-in', type: 'file', accept: '.json,application/json', disabled: !can });
+      var fileIn = h('input', { class: 'file-in', type: 'file', disabled: !can });
       fileIn.addEventListener('change', function () { var f = fileIn.files && fileIn.files[0]; if (f) importBackup(f); fileIn.value = ''; });
       m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '设置' }), h('div', { class: 'box' }, [
         h('div', { class: 'setting' }, [h('span', { text: '同一个学生第几次交给班主任' }), h('div', { class: 'stepper' }, [
@@ -591,7 +591,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     file.text().then(function (text) {
       var o; try { o = JSON.parse(text); } catch (e) { o = null; }
       if (!o || o.app !== 'class-log' || !Array.isArray(o.incidents)) { toast('这不是小本本的备份文件'); return; }
-      var have = {}, r = { added: 0, updated: 0, same: 0 }, b = S.db.batch();
+      var have = Object.create(null), r = { added: 0, updated: 0, same: 0 }, b = S.db.batch();
       S.items.forEach(function (it) { have[it.id] = it; });
       o.incidents.forEach(function (x) {
         if (!x || typeof x.id !== 'string' || !x.id) return;
