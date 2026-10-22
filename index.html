@@ -163,6 +163,11 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .cls-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
 .cls-inputs .input { height: 40px; padding: 0 12px; }
 .input:disabled { opacity: .55; }
+.btn-row { display: flex; gap: 8px; }
+.btn { position: relative; flex: 1 1 0; min-width: 0; height: 40px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-weight: 600; font-size: 14.5px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.btn:disabled, .btn.off { opacity: .55; pointer-events: none; }
+.btn:has(:focus-visible) { outline: 2px solid var(--pink); outline-offset: 2px; }
+.file-in { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
 /* ---------- 记一笔（整页） ---------- */
 .formbar { position: sticky; top: 0; z-index: 20; background: var(--board); color: var(--chalk); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
@@ -246,7 +251,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   /* ---------- 状态 ---------- */
   var S = {
-    db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''],
+    db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''], settingsAt: 0,
     view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
     form: null, formInit: '', saving: false, backArmed: false, delArmed: false
   };
@@ -515,6 +520,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
         el.addEventListener('keydown', function (e) { if (e.key === 'Enter') el.blur(); });
         return el;
       });
+      var fileIn = h('input', { class: 'file-in', type: 'file', accept: '.json,application/json', disabled: !can });
+      fileIn.addEventListener('change', function () { var f = fileIn.files && fileIn.files[0]; if (f) importBackup(f); fileIn.value = ''; });
       m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '设置' }), h('div', { class: 'box' }, [
         h('div', { class: 'setting' }, [h('span', { text: '同一个学生第几次交给班主任' }), h('div', { class: 'stepper' }, [
           h('button', { type: 'button', 'aria-label': '少一次', disabled: !can || E <= 2, text: '−', onclick: function () { setEscalate(E - 1); } }),
@@ -522,7 +529,11 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
           h('button', { type: 'button', 'aria-label': '多一次', disabled: !can || E >= 6, text: '+', onclick: function () { setEscalate(E + 1); } })
         ])]),
         h('div', { class: 'set-part' }, [h('span', { text: '我的三个班' }), h('div', { class: 'cls-inputs' }, clsInputs)]),
-        h('div', { class: 'fine', text: '记录只存在这台设备的浏览器里，不上传；别人打开这个网址，看到的是自己的空本子。' })
+        h('div', { class: 'set-part btn-row' }, [
+          h('button', { class: 'btn', type: 'button', disabled: !can, text: '导出备份', onclick: exportBackup }),
+          h('label', { class: 'btn' + (can ? '' : ' off') }, [fileIn, '导入'])
+        ]),
+        h('div', { class: 'fine', text: '记录只存在这台设备上，不上传，别人打开网址看不到。换手机前先导出备份；导入只加不删。' })
       ])]));
     }
   }
@@ -540,13 +551,66 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function writeSettings() {
     if (!S.db) return;
     if (setWriting) { setPending = true; return; }
-    setWriting = true;
-    S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: Date.now() })
+    setWriting = true; S.settingsAt = Date.now();
+    S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt })
       .catch(function (e) { toast(errText(e)); })
       .then(function () {
         setWriting = false;
         if (setPending) { setPending = false; writeSettings(); }
       });
+  }
+
+  /* ---------- 备份：导出一个 JSON（iPhone 走分享面板，能「存储到文件」；别处直接下载）；
+     导入按 id 合并：没有的加上，同一个 id 留 updatedAt 新的那份，不删已有的 ---------- */
+  function exportBackup() {
+    var data = { app: 'class-log', version: 1, exportedAt: new Date().toISOString(),
+      settings: { escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt }, incidents: S.items };
+    var file = new File([JSON.stringify(data, null, 1)], '小本本备份-' + today() + '.json', { type: 'application/json' });
+    var done = '导出了 ' + S.items.length + ' 条';
+    if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).then(function () { toast(done); }, function (e) { if (!e || e.name !== 'AbortError') download(file); });
+      return;
+    }
+    download(file); toast(done);
+  }
+  function download(file) {
+    var url = URL.createObjectURL(file), a = h('a', { href: url, download: file.name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+  }
+  function str(v) { return v == null ? '' : String(v); }
+  function cleanItem(x) {
+    return { student: norm(x.student), cls: str(x.cls), type: str(x.type), date: /^\d{4}-\d\d-\d\d$/.test(x.date) ? x.date : '',
+      what: str(x.what), did: str(x.did), result: str(x.result), done: !!x.done, createdAt: +x.createdAt || 0, updatedAt: +x.updatedAt || 0 };
+  }
+  function importBackup(file) {
+    file.text().then(function (text) {
+      var o; try { o = JSON.parse(text); } catch (e) { o = null; }
+      if (!o || o.app !== 'class-log' || !Array.isArray(o.incidents)) { toast('这不是小本本的备份文件'); return; }
+      var have = {}, r = { added: 0, updated: 0, same: 0 }, b = S.db.batch();
+      S.items.forEach(function (it) { have[it.id] = it; });
+      o.incidents.forEach(function (x) {
+        if (!x || typeof x.id !== 'string' || !x.id) return;
+        var d = cleanItem(x), old = have[x.id];
+        if (!old) r.added++;
+        else if (d.updatedAt > (+old.updatedAt || 0)) r.updated++;
+        else { r.same++; return; }
+        have[x.id] = d; b.set(S.db.doc('incidents/' + x.id), d);
+      });
+      var st = o.settings;
+      if (st && +st.updatedAt > S.settingsAt && !settingsBusy()) {
+        var v = +st.escalateAt;
+        b.set(S.db.doc('settings/main'), { escalateAt: v >= 2 && v <= 6 ? v : 3, updatedAt: +st.updatedAt,
+          classes: [0, 1, 2].map(function (i) { return Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }) });
+      }
+      return b.commit().then(function () {
+        var parts = [];
+        if (r.added) parts.push('新加 ' + r.added + ' 条');
+        if (r.updated) parts.push('更新 ' + r.updated + ' 条');
+        if (r.same) parts.push(r.same + ' 条本来就有');
+        toast('导入好了' + (parts.length ? '：' + parts.join('，') : ''));
+      });
+    }).catch(function (e) { toast(errText(e)); });
   }
 
   /* ---------- 记一笔（整页） ---------- */
@@ -825,11 +889,11 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       return read(s.col, s.id).then(function (snap) { if (!s.off && n === s.seq) s.fn(snap); }, function (e) { if (!s.off && s.err) s.err(e); });
     }
     function notify(col) { return Promise.all(subs.filter(function (s) { return s.col === col; }).map(deliver)); }
+    function changed(cols) {
+      return Promise.all(cols.map(function (col) { if (chan) chan.postMessage(col); return notify(col); }));
+    }
     function write(col, work) {
-      return tx(col, 'readwrite', function (t) { work(t.objectStore(col)); }).then(function () {
-        if (chan) chan.postMessage(col);
-        return notify(col);
-      });
+      return tx(col, 'readwrite', function (t) { work(t.objectStore(col)); }).then(function () { return changed([col]); });
     }
     function listen(col, id, fn, err) {
       var s = { col: col, id: id, fn: fn, err: err, seq: 0 };
@@ -842,7 +906,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     }
     function ref(col, id) {
       return {
-        id: id,
+        id: id, path: col + '/' + id,
         set: function (data) { return write(col, function (st) { st.put(data, id); }); },
         /* 合并进已有的；这一笔已经被别的标签页删了，就按这次的内容重新存 */
         update: function (data) {
@@ -859,7 +923,21 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       collection: function (col) {
         return { doc: function (id) { return ref(col, id || newId()); }, onSnapshot: function (fn, err) { return listen(col, null, fn, err); } };
       },
-      doc: function (path) { var p = path.split('/'); return ref(p[0], p[1]); }
+      doc: function (path) { var i = path.indexOf('/'); return ref(path.slice(0, i), path.slice(i + 1)); },
+      /* 好几条一次写完（导入用），写完每个集合只通知一次 */
+      batch: function () {
+        var ops = [];
+        return {
+          set: function (r, data) { var i = r.path.indexOf('/'); ops.push([r.path.slice(0, i), r.id, data]); },
+          commit: function () {
+            var cols = [];
+            ops.forEach(function (o) { if (cols.indexOf(o[0]) < 0) cols.push(o[0]); });
+            if (!cols.length) return Promise.resolve();
+            return tx(cols, 'readwrite', function (t) { ops.forEach(function (o) { t.objectStore(o[0]).put(o[2], o[1]); }); })
+              .then(function () { return changed(cols); });
+          }
+        };
+      }
     };
   }
 
@@ -883,6 +961,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     db.doc('settings/main').onSnapshot(function (snap) {
       if (settingsBusy()) return;
       var d = snap.exists ? snap.data() : null, v = d ? +d.escalateAt : 3;
+      S.settingsAt = d && +d.updatedAt || 0;
       var next = v >= 2 && v <= 6 ? v : 3;
       var cls = [0, 1, 2].map(function (i) { return d && Array.isArray(d.classes) && d.classes[i] ? String(d.classes[i]) : ''; });
       if (next !== S.escalateAt || cls.join('\n') !== S.classes.join('\n')) { S.escalateAt = next; S.classes = cls; onData(); }
