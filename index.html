@@ -159,6 +159,10 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .stepper button:disabled { opacity: .3; cursor: default; }
 .stepper output { min-width: 2em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fine { color: var(--ink2); font-size: 13px; margin-top: 10px; }
+.set-part { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.cls-inputs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.cls-inputs .input { height: 40px; padding: 0 12px; }
+.input:disabled { opacity: .55; }
 
 /* ---------- 记一笔（整页） ---------- */
 .formbar { position: sticky; top: 0; z-index: 20; background: var(--board); color: var(--chalk); padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: 10px; }
@@ -239,11 +243,10 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     ['收尾', '行，就到这儿。回去吧。'],
     ['自己急了', '这事下课再说。']
   ];
-  var DEFAULT_CLASSES = ['1班', '2班', '3班'];
 
   /* ---------- 状态 ---------- */
   var S = {
-    db: null, dbState: 'loading', items: [], escalateAt: 3,
+    db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''],
     view: 'home', tab: 'records', filter: 'all', q: '', scroll: { records: 0, scripts: 0 },
     form: null, formInit: '', saving: false, backArmed: false, delArmed: false
   };
@@ -297,7 +300,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     return '第 ' + E + ' 次起';
   }
   function classes() {
-    var set = DEFAULT_CLASSES.slice();
+    var set = [];
+    S.classes.forEach(function (c) { c = norm(c); if (c && c !== '其他' && set.indexOf(c) < 0) set.push(c); });
     S.items.forEach(function (it) { if (it.cls && it.cls !== '其他' && set.indexOf(it.cls) < 0) set.push(it.cls); });
     return set;
   }
@@ -503,34 +507,45 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
     if (!q) {
       var can = S.dbState === 'ready';
+      var clsInputs = [0, 1, 2].map(function (i) {
+        var el = h('input', { class: 'input', type: 'text', placeholder: '班级 ' + (i + 1), 'aria-label': '第 ' + (i + 1) + ' 个班', autocomplete: 'off', enterkeyhint: 'done', disabled: !can });
+        el.value = S.classes[i];
+        el.addEventListener('input', function () { S.classes[i] = el.value; saveSettings(); });
+        el.addEventListener('blur', flushSettings);
+        el.addEventListener('keydown', function (e) { if (e.key === 'Enter') el.blur(); });
+        return el;
+      });
       m.appendChild(h('section', { class: 'sec' }, [h('h2', { text: '设置' }), h('div', { class: 'box' }, [
         h('div', { class: 'setting' }, [h('span', { text: '同一个学生第几次交给班主任' }), h('div', { class: 'stepper' }, [
           h('button', { type: 'button', 'aria-label': '少一次', disabled: !can || E <= 2, text: '−', onclick: function () { setEscalate(E - 1); } }),
           h('output', { text: String(E) }),
           h('button', { type: 'button', 'aria-label': '多一次', disabled: !can || E >= 6, text: '+', onclick: function () { setEscalate(E + 1); } })
         ])]),
+        h('div', { class: 'set-part' }, [h('span', { text: '我的三个班' }), h('div', { class: 'cls-inputs' }, clsInputs)]),
         h('div', { class: 'fine', text: '记录只存在这台设备的浏览器里，不上传；别人打开这个网址，看到的是自己的空本子。' })
       ])]));
     }
   }
 
-  /* 连点只存最后一下，同一时间只写一次 */
-  var escTimer = null, escWriting = false, escPending = null;
-  function escBusy() { return !!escTimer || escWriting; }
-  function setEscalate(n) {
-    S.escalateAt = n; renderMain();
-    clearTimeout(escTimer);
-    escTimer = setTimeout(function () { escTimer = null; writeEscalate(n); }, 500);
+  /* 设置连着改只存最后一下，同一时间只写一次；每次把所有设置一起存。离开输入框、切走页面马上存 */
+  var setTimer = null, setWriting = false, setPending = false;
+  function settingsBusy() { return !!setTimer || setWriting; }
+  function setEscalate(n) { S.escalateAt = n; renderMain(); saveSettings(); }
+  function saveSettings() {
+    clearTimeout(setTimer);
+    setTimer = setTimeout(function () { setTimer = null; writeSettings(); }, 500);
   }
-  function writeEscalate(n) {
+  function flushSettings() { if (setTimer) { clearTimeout(setTimer); setTimer = null; writeSettings(); } }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) flushSettings(); });
+  function writeSettings() {
     if (!S.db) return;
-    if (escWriting) { escPending = n; return; }
-    escWriting = true;
-    S.db.doc('settings/main').set({ escalateAt: n })
+    if (setWriting) { setPending = true; return; }
+    setWriting = true;
+    S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: Date.now() })
       .catch(function (e) { toast(errText(e)); })
       .then(function () {
-        escWriting = false;
-        if (escPending != null) { var p = escPending; escPending = null; if (p !== n) writeEscalate(p); }
+        setWriting = false;
+        if (setPending) { setPending = false; writeSettings(); }
       });
   }
 
@@ -679,6 +694,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       classes().concat(['其他']).forEach(function (c) {
         row.appendChild(h('button', { class: 'chip', type: 'button', 'aria-pressed': String(f.cls === c), onclick: function () { f.cls = f.cls === c ? '' : c; renderClasses(); } }, [c]));
       });
+      if (!S.classes.some(norm)) row.appendChild(h('span', { class: 'chip-note', text: '你的班在「话术」页最下面的设置里填' }));
     });
   }
   function renderTypes() {
@@ -865,10 +881,11 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       onData();
     });
     db.doc('settings/main').onSnapshot(function (snap) {
-      if (escBusy()) return;
+      if (settingsBusy()) return;
       var d = snap.exists ? snap.data() : null, v = d ? +d.escalateAt : 3;
       var next = v >= 2 && v <= 6 ? v : 3;
-      if (next !== S.escalateAt) { S.escalateAt = next; onData(); }
+      var cls = [0, 1, 2].map(function (i) { return d && Array.isArray(d.classes) && d.classes[i] ? String(d.classes[i]) : ''; });
+      if (next !== S.escalateAt || cls.join('\n') !== S.classes.join('\n')) { S.escalateAt = next; S.classes = cls; onData(); }
     }, function () {});
   })();
 })();
