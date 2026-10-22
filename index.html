@@ -845,25 +845,29 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   }
 
   /* 设置连着改只存最后一下，同一时间只写一次；每次把所有设置一起存。离开输入框、切走页面马上存 */
-  var setTimer = null, setWriting = false, setPending = false;
+  var setTimer = null, setWriting = false, setPending = false, setPromise = Promise.resolve();
   function settingsBusy() { return !!setTimer || setWriting; }
   function setEscalate(n) { S.escalateAt = n; renderMain(); saveSettings(); }
   function saveSettings() {
     clearTimeout(setTimer);
     setTimer = setTimeout(function () { setTimer = null; writeSettings(); }, 500);
   }
-  function flushSettings() { if (setTimer) { clearTimeout(setTimer); setTimer = null; writeSettings(); } }
+  function flushSettings() {
+    if (setTimer) { clearTimeout(setTimer); setTimer = null; writeSettings(); }
+    return setPromise;
+  }
   document.addEventListener('visibilitychange', function () { if (document.hidden) flushSettings(); });
   function writeSettings() {
-    if (!S.db) return;
-    if (setWriting) { setPending = true; return; }
+    if (!S.db) return setPromise;
+    if (setWriting) { setPending = true; return setPromise; }
     setWriting = true; S.settingsAt = Date.now();
-    S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt })
+    setPromise = S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt })
       .catch(function (e) { toast(errText(e)); })
       .then(function () {
         setWriting = false;
-        if (setPending) { setPending = false; writeSettings(); }
+        if (setPending) { setPending = false; return writeSettings(); }
       });
+    return setPromise;
   }
 
   /* ---------- 备份：导出一个 JSON（iPhone 走分享面板，能「存储到文件」；别处直接下载）；
@@ -887,52 +891,84 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
   }
   function str(v) { return v == null ? '' : String(v); }
+  function stamp(v) { var n = +v; return Number.isFinite(n) && n > 0 ? n : 0; }
   function cleanItem(x) {
     return { student: norm(x.student), cls: str(x.cls), type: str(x.type), date: /^\d{4}-\d\d-\d\d$/.test(x.date) ? x.date : '',
-      what: str(x.what), did: str(x.did), result: str(x.result), done: !!x.done, createdAt: +x.createdAt || 0, updatedAt: +x.updatedAt || 0 };
+      what: str(x.what), did: str(x.did), result: str(x.result), done: !!x.done, createdAt: stamp(x.createdAt), updatedAt: stamp(x.updatedAt) };
   }
   function importBackup(file) {
     file.text().then(function (text) {
       var o; try { o = JSON.parse(text); } catch (e) { o = null; }
       if (!o || o.app !== 'class-log' || !Array.isArray(o.incidents)) { toast('这不是小本本的备份文件'); return; }
-      var have = Object.create(null), r = { added: 0, updated: 0, same: 0 }, b = S.db.batch();
-      S.items.forEach(function (it) { have[it.id] = it; });
-      o.incidents.forEach(function (x) {
-        if (!x || typeof x.id !== 'string' || !x.id) return;
-        var d = cleanItem(x), old = have[x.id];
-        if (!old) r.added++;
-        else if (d.updatedAt > (+old.updatedAt || 0)) r.updated++;
-        else { r.same++; return; }
-        have[x.id] = d; b.set(S.db.doc('incidents/' + x.id), d);
-      });
-      var st = o.settings, takeSt = !!st && +st.updatedAt > S.settingsAt && !settingsBusy();
-      if (takeSt) {
-        var v = +st.escalateAt;
-        b.set(S.db.doc('settings/main'), { escalateAt: v >= 2 && v <= 6 ? v : 3, updatedAt: +st.updatedAt,
-          classes: [0, 1, 2].map(function (i) { return Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }) });
-      }
-      /* 名单：设置也一起导进来就按第几个班放；设置没导（本机的新）就按班名找本机同名的班，找不到的不导、提示一句。
-         每个班 updatedAt 新的那份赢；老备份没有 rosters 就跳过 */
-      var ro = o.rosters && typeof o.rosters === 'object' ? o.rosters : {}, rn = 0, miss = 0, used = [];
-      var bkCls = !takeSt && st && Array.isArray(st.classes) ? st.classes : null, myCls = S.classes.map(norm);
-      [0, 1, 2].forEach(function (j) {
-        var d = cleanRoster(ro['roster' + (j + 1)]), c = bkCls ? norm(bkCls[j]) : '', i = bkCls ? (c ? myCls.indexOf(c) : -1) : j;
-        if (!d || !d.names.length) return;
-        if (i < 0 || used[i]) { miss++; return; }
-        used[i] = true;
-        var mine = S.rosters[i];
-        if (!mine || d.updatedAt > mine.updatedAt) { b.set(S.db.doc('settings/roster' + (i + 1)), d); rn++; }
-      });
-      return b.commit().then(function () {
+      return flushSettings().then(function () { return S.db.importBackup(o); }).then(function (r) {
         var parts = [];
         if (r.added) parts.push('新加 ' + r.added + ' 条');
         if (r.updated) parts.push('更新 ' + r.updated + ' 条');
         if (r.same) parts.push(r.same + ' 条本来就有');
-        if (rn) parts.push('名单 ' + rn + ' 份');
-        if (miss) parts.push('有 ' + miss + ' 份名单班名对不上，没导');
+        if (r.rosters) parts.push('名单 ' + r.rosters + ' 份');
+        if (r.miss) parts.push('有 ' + r.miss + ' 份名单班名对不上，没导');
+        if (r.keptClasses) parts.push('已保留本机名单对应的班级');
         toast('导入好了' + (parts.length ? '：' + parts.join('，') : ''));
       });
     }).catch(function (e) { toast(errText(e)); });
+  }
+
+  /* 在同一个读写事务里用库里的最新值合并，不能拿页面缓存决定谁覆盖谁。
+     名单只合并：新的那份定顺序和共有名字的常客标记，另一份独有的人追加在后面。 */
+  function mergeRoster(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    var first = b.updatedAt > a.updatedAt ? b : a, other = first === b ? a : b;
+    var extra = other.names.filter(function (n) { return first.names.indexOf(n) < 0; });
+    return { names: first.names.concat(extra), regulars: first.regulars.concat(other.regulars.filter(function (n) { return extra.indexOf(n) >= 0; })),
+      updatedAt: Math.max(a.updatedAt, b.updatedAt) };
+  }
+  function backupPlan(o, have, cfg) {
+    var ops = [], result = { added: 0, updated: 0, same: 0, rosters: 0, miss: 0, keptClasses: false };
+    function put(col, id, d) { ops.push([col, id, d]); }
+    function cls(st) { return [0, 1, 2].map(function (i) { return st && Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }); }
+    function unique(a, c) { return !!c && a.indexOf(c) === a.lastIndexOf(c); }
+    o.incidents.forEach(function (x) {
+      if (!x || typeof x.id !== 'string' || !x.id) return;
+      var d = cleanItem(x), old = have[x.id];
+      if (!old) result.added++;
+      else if (d.updatedAt > stamp(old.updatedAt)) result.updated++;
+      else { result.same++; return; }
+      have[x.id] = d; put('incidents', x.id, d);
+    });
+    var main = cfg.main, st = o.settings, oldCls = cls(main), nextCls = oldCls;
+    var old = [1, 2, 3].map(function (i) { return cleanRoster(cfg['roster' + i]); }), next = old.slice();
+    if (st && (!main || stamp(st.updatedAt) > stamp(main.updatedAt))) {
+      nextCls = Array.isArray(st.classes) ? cls(st) : oldCls;
+      if (JSON.stringify(nextCls) !== JSON.stringify(oldCls)) {
+        var canMove = old.every(function (r, i) { return !r || !r.names.length || (unique(oldCls, oldCls[i]) && unique(nextCls, oldCls[i]) && nextCls.indexOf(oldCls[i]) >= 0); });
+        if (canMove) next = nextCls.map(function (c) { var i = c ? oldCls.indexOf(c) : -1; return i >= 0 ? old[i] : null; });
+        else { nextCls = oldCls; result.keptClasses = true; }
+      }
+      var v = +st.escalateAt;
+      put('settings', 'main', { escalateAt: v >= 2 && v <= 6 ? v : 3, classes: nextCls, updatedAt: stamp(st.updatedAt) });
+    }
+    var ro = o.rosters && typeof o.rosters === 'object' ? o.rosters : {};
+    var bkCls = st && Array.isArray(st.classes) ? cls(st) : null;
+    [0, 1, 2].forEach(function (j) {
+      var d = cleanRoster(ro['roster' + (j + 1)]);
+      if (!d || !d.names.length) return;
+      var c = bkCls && bkCls[j], i = -1;
+      if (bkCls && JSON.stringify(bkCls) === JSON.stringify(nextCls) && c) i = j;
+      else if (bkCls && unique(bkCls, c) && unique(nextCls, c)) i = nextCls.indexOf(c);
+      if (i < 0) { result.miss++; return; }
+      next[i] = mergeRoster(next[i], d);
+    });
+    next.forEach(function (d, i) {
+      var before = old[i];
+      if (!d && !before) return;
+      d = d || { names: [], regulars: [], updatedAt: 0 };
+      if (before && JSON.stringify([d.names, d.regulars]) === JSON.stringify([before.names, before.regulars]) && d.updatedAt <= before.updatedAt) return;
+      /* 换位置也向前走，位置上晚到的旧快照不能盖回刚合并的名单。 */
+      d = { names: d.names, regulars: d.regulars, updatedAt: Math.max(Date.now(), d.updatedAt, before ? before.updatedAt : 0) + 1 };
+      put('settings', 'roster' + (i + 1), d); result.rosters++;
+    });
+    return { ops: ops, result: result };
   }
 
   /* ---------- 名单：设置里第几个班就存 settings/rosterN（N = 1/2/3，改班名不丢名单）；
@@ -977,7 +1013,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     var names = [], regs = [];
     x.names.forEach(function (n) { n = cleanName(n); if (n && names.indexOf(n) < 0) names.push(n); });
     (Array.isArray(x.regulars) ? x.regulars : []).forEach(function (n) { n = cleanName(n); if (names.indexOf(n) >= 0 && regs.indexOf(n) < 0) regs.push(n); });
-    return { names: names, regulars: regs, updatedAt: +x.updatedAt || 0 };
+    return { names: names, regulars: regs, updatedAt: stamp(x.updatedAt) };
   }
   function hasRoster(i) { return !!(S.rosters[i] && S.rosters[i].names.length); }
   /* 先改本地再写；updatedAt 一次比一次大，晚到的旧快照不会盖掉刚点的 */
@@ -1418,6 +1454,24 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
         return { doc: function (id) { return ref(col, id || newId()); }, onSnapshot: function (fn, err) { return listen(col, null, fn, err); } };
       },
       doc: function (path) { var i = path.indexOf('/'); return ref(path.slice(0, i), path.slice(i + 1)); },
+      importBackup: function (o) {
+        var plan, failed;
+        return tx(['incidents', 'settings'], 'readwrite', function (t) {
+          var data = { incidents: Object.create(null), settings: Object.create(null) }, pending = 2;
+          ['incidents', 'settings'].forEach(function (col) {
+            t.objectStore(col).openCursor().onsuccess = function (e) {
+              var c = e.target.result;
+              if (c) { data[col][c.key] = c.value; c.continue(); return; }
+              if (--pending) return;
+              try {
+                plan = backupPlan(o, data.incidents, data.settings);
+                plan.ops.forEach(function (p) { t.objectStore(p[0]).put(p[2], p[1]); });
+              } catch (err) { failed = err; t.abort(); }
+            };
+          });
+        }).then(function () { return changed(['incidents', 'settings']); }, function (e) { throw failed || e; })
+          .then(function () { return plan.result; });
+      },
       /* 好几条一次写完（导入用），写完每个集合只通知一次 */
       batch: function () {
         var ops = [];
