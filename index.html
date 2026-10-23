@@ -29,6 +29,7 @@
   --on-pink: #ffffff;
   --pink-soft: #fde6ee;
   --pink-ink: #c4507a;
+  --reg-ink: #a8365f;
   --yellow: #805a0b;
   --yellow-soft: #f8edcf;
   --warn: #a3401c;
@@ -46,31 +47,32 @@
   --font-display: "ZCOOL KuaiLe", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --r: 18px;
+  --scrim: rgba(31, 45, 68, .3); --fab-h: 56px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #121821; --card: #1b2330; --ink: #e6ecf5; --ink2: #9aa8bd; --line: #2b3646;
     --board: #2a4470; --board2: #1e3356; --chalk: #f2f6fc; --chalk2: #b9cbe6;
-    --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
+    --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9; --reg-ink: #f4a3b9;
     --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
     --good: #f08aa6; --good-soft: #3a2430;
     --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
     --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
     --glass: rgba(92, 52, 66, .5); --glass-ink: #f2cbd7; --glass-line: rgba(255, 255, 255, .14); --glass-hi: rgba(255, 255, 255, .12); --glass-shadow: rgba(0, 0, 0, .35); --glass-btn: #c98aa0; --glass-btn-ink: #2a1119;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25); --scrim: rgba(0, 0, 0, .5);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #121821; --card: #1b2330; --ink: #e6ecf5; --ink2: #9aa8bd; --line: #2b3646;
   --board: #2a4470; --board2: #1e3356; --chalk: #f2f6fc; --chalk2: #b9cbe6;
-  --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9;
+  --pink: #f08aa6; --on-pink: #2a0f18; --pink-soft: #3a2430; --pink-ink: #f4a3b9; --reg-ink: #f4a3b9;
   --yellow: #e5bb5c; --yellow-soft: #352d1c; --warn: #f19a6c; --on-warn: #2b130a; --warn-soft: #3b271e;
   --good: #f08aa6; --good-soft: #3a2430;
   --c1: #9cc0f2; --c1-soft: #22344f; --c2: #c6b2f2; --c2-soft: #30284a; --c3: #8fd3cb; --c3-soft: #1b3734;
   --ring: #4a576a; --on-good: #2a0f18; --leaf1: #222c3b; --leaf2: #2a2331;
   --glass: rgba(92, 52, 66, .5); --glass-ink: #f2cbd7; --glass-line: rgba(255, 255, 255, .14); --glass-hi: rgba(255, 255, 255, .12); --glass-shadow: rgba(0, 0, 0, .35); --glass-btn: #c98aa0; --glass-btn-ink: #2a1119;
-  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25); --scrim: rgba(0, 0, 0, .5);
   color-scheme: dark;
 }
 
@@ -166,8 +168,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .leaf-what { margin-top: 4px; font-size: 14.5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .more { padding-top: 8px; text-align: center; color: var(--ink2); font-size: 12.5px; }
 .p-sum { display: flex; align-items: center; gap: 8px; color: var(--ink2); font-size: 13.5px; }
-/* 班级胶囊：设置里第 1/2/3 个班 蓝/紫/青，其他灰 */
-.cls-pill { flex: none; display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; letter-spacing: 0; background: var(--paper); color: var(--ink2); }
+/* 班级胶囊：设置里第 1/2/3 个班 蓝/紫/青，其他灰；只填数字的、数字加「班」的短班名和「其他」一样宽（min-width + 字居中），更长的班名照样撑开、不截断 */
+.cls-pill { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 48px; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 12.5px; font-weight: 700; letter-spacing: 0; white-space: nowrap; background: var(--paper); color: var(--ink2); }
 .cls-pill.c1 { background: var(--c1-soft); color: var(--c1); }
 .cls-pill.c2 { background: var(--c2-soft); color: var(--c2); }
 .cls-pill.c3 { background: var(--c3-soft); color: var(--c3); }
@@ -188,8 +190,28 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .empty .big { font-family: var(--font-display); font-size: 22px; color: var(--ink); margin-bottom: 6px; }
 .notice { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--yellow-soft); color: var(--yellow); font-size: 14px; font-weight: 600; }
 
-.fab { position: fixed; z-index: 15; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); height: 52px; padding: 0 22px; border-radius: 999px; background: var(--pink); color: var(--on-pink); font-weight: 700; font-size: 16px; box-shadow: 0 8px 20px rgba(220, 93, 136, .32); display: inline-flex; align-items: center; transition: transform .12s ease; }
+/* 右下角圆形「+」：点开「+」转成「×」，上面一个接一个弹出各个班（带回弹）；点「×」或空白收回。名单页上它就是返回，也画成「×」
+   遮罩、弹出的班、「+」都压在状态栏蓝带（body::before，z-index 30）上面：加到主屏幕时弹开，顶上那条也一起变暗 */
+.fab { position: fixed; z-index: 33; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: var(--fab-h); height: var(--fab-h); border-radius: 50%; background: var(--pink); color: var(--on-pink); box-shadow: 0 8px 20px rgba(220, 93, 136, .32); display: inline-flex; align-items: center; justify-content: center; transition: transform .12s ease; }
 .fab:active { transform: scale(.96); }
+.fab i { flex: none; display: flex; width: 26px; height: 26px; transition: transform .34s cubic-bezier(.34, 1.56, .64, 1); }
+.fab svg { width: 100%; height: 100%; }
+.fab[aria-expanded="true"] i { transform: rotate(135deg); }
+.dial-mask { position: fixed; inset: 0; z-index: 31; background: var(--scrim); cursor: pointer; touch-action: none; animation: fade-in .2s ease both; }
+/* 弹出的班级按钮一样宽（都拉到最宽那个），圆点和班名靠左 */
+.dial { position: fixed; z-index: 32; right: calc(18px + env(safe-area-inset-right, 0px)); bottom: calc(32px + var(--fab-h) + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.dial-item { display: inline-flex; align-items: center; justify-content: flex-start; gap: 9px; height: 48px; padding: 0 22px 0 18px; border-radius: 999px; background: var(--card); color: var(--ink); font-size: 16px; font-weight: 700; box-shadow: var(--shadow); white-space: nowrap; transform-origin: 100% 50%; animation: dial-pop .4s cubic-bezier(.34, 1.56, .64, 1) both; animation-delay: calc(var(--i, 0) * 55ms); }
+.dial-item i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--ink2); }
+.dial-item.c1 i { background: var(--c1); }
+.dial-item.c2 i { background: var(--c2); }
+.dial-item.c3 i { background: var(--c3); }
+.dial.out .dial-item { animation: dial-out .14s ease-in both; animation-delay: calc(var(--j, 0) * 25ms); }
+.dial-mask.out { animation: fade-out .2s ease both; }
+.dial-mask.out, .dial.out { pointer-events: none; }
+@keyframes dial-pop { from { opacity: 0; transform: translateY(20px) scale(.55); } to { opacity: 1; transform: none; } }
+@keyframes dial-out { to { opacity: 0; transform: translateY(12px) scale(.8); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
 
 /* ---------- 话术页 ---------- */
 .sec { margin-top: 18px; }
@@ -259,12 +281,42 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 .danger { margin-top: 26px; width: 100%; height: 46px; border-radius: 14px; border: 1.5px solid var(--line); color: var(--warn); font-weight: 700; background: var(--card); }
 .danger.armed { background: var(--warn); border-color: var(--warn); color: var(--on-warn); }
 
+/* ---------- 班级名单页（整页）：一排 5 格平铺，常客在前（粉色实底）；格子高度按屏幕算（--cell-h），一屏放下 ---------- */
+/* 没有顶栏，右下角「×」就是返回：第一排躲开状态栏（加到主屏幕时），格子底下给「×」让位 */
+.rmain { padding-top: calc(10px + env(safe-area-inset-top, 0px)); padding-bottom: calc(30px + var(--fab-h) + env(safe-area-inset-bottom, 0px)); }
+.rgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--rgap, 6px); }
+.rc { position: relative; min-width: 0; height: var(--cell-h, 44px); display: flex; align-items: center; justify-content: center; padding: 0 2px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.2; transition: transform .12s ease; }
+.rc:active { transform: scale(.94); }
+.rc .nm { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rc.l4 { font-size: 12.5px; letter-spacing: -.02em; }
+.rc.l5 { font-size: 11px; letter-spacing: -.03em; }
+/* 六个字以上：从中间折成两行（上面那行不比下面长，躲开右上角的次数），不截成「…」 */
+.rc.l6 { font-size: 11px; letter-spacing: -.03em; line-height: 1.05; }
+/* 次数挂在右上角，不占名字的宽度；格子矮的时候名字往下让一点，别和数字叠 */
+.rc .k { position: absolute; top: 2px; right: 4px; font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.rc.has-k { padding-top: clamp(0px, calc(44px - var(--cell-h, 44px)), 9px); }
+.rc.l6.has-k { padding-top: clamp(0px, calc(60px - var(--cell-h, 44px)), 11px); }
+.rc.reg { background: var(--pink-soft); border-color: var(--pink-soft); color: var(--reg-ink); font-weight: 700; }
+.rc.add { background: transparent; border: 1.5px dashed var(--ring); color: var(--ink2); font-size: 13px; }
+/* 320 宽（SE 一代、放大显示）：三个字 15px 放不下，整体小一号 */
+@media (max-width: 340px) { .rc { font-size: 14px; } .rc.l4 { font-size: 11.5px; } .rc.l5, .rc.l6 { font-size: 9.5px; } }
+/* 设置里的名单页：常客格子（固定高度）+ 粘贴框 */
+.rgrid.edit .rc { height: 44px; }
+.reg-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 2px 0 8px; color: var(--ink2); font-size: 13.5px; }
+.reg-head > span:first-child { min-width: 0; }
+.reg-head b { flex: none; color: var(--pink-ink); font-size: 13px; white-space: nowrap; }
+.pnote { margin-top: 8px; color: var(--ink2); font-size: 13.5px; }
+.btn.primary { margin-top: 10px; width: 100%; height: 46px; border-color: var(--pink); background: var(--pink); color: var(--on-pink); font-weight: 700; }
+.ros-btns .btn { height: 36px; font-size: 13.5px; }
+
 .toast { position: fixed; z-index: 40; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 16px; font-size: 14px; font-weight: 600; text-align: center; box-shadow: var(--shadow); }
 /* 带按钮的提示（撤销）：屏幕正中间，半透明磨砂淡粉，按钮是低饱和的玫瑰粉胶囊 */
 .toast.has-act { top: 50%; bottom: auto; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 28px 16px; border-radius: 22px; font-size: 16px; color: var(--glass-ink); background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.25); backdrop-filter: blur(18px) saturate(1.25); border: 1px solid var(--glass-line); box-shadow: 0 12px 32px var(--glass-shadow), inset 0 1px 0 var(--glass-hi); }
 .toast-act { display: inline-flex; align-items: center; height: 44px; padding: 0 28px; border-radius: 999px; background: var(--glass-btn); color: var(--glass-btn-ink); font-size: 16px; font-weight: 700; }
 .toast.at-top { bottom: auto; top: calc(70px + env(safe-area-inset-top, 0px)); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+/* 名单页：放到右下角「×」左边那条空地上（和「×」一样高），不盖最后一排格子；格子多到要滑时也不挡点 */
+.toast.at-fab { bottom: calc(18px + var(--fab-h) / 2 + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 50%); max-width: calc(100% - 2 * (30px + var(--fab-h) + env(safe-area-inset-right, 0px))); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
@@ -315,7 +367,8 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   var S = {
     db: null, dbState: 'loading', items: [], escalateAt: 3, classes: ['', '', ''], settingsAt: 0,
     view: 'home', tab: 'records', filter: 'all', showDone: false, q: '', scroll: { records: 0, scripts: 0 },
-    person: null, personScroll: 0, form: null, formInit: '', saving: false, backArmed: false, delArmed: false
+    person: null, personScroll: 0, form: null, formInit: '', saving: false, backArmed: false, delArmed: false,
+    rosters: [null, null, null], roster: null, rosterScroll: 0, rosterEdit: null, dial: false
   };
   var app = document.getElementById('app');
   var refs = {};
@@ -389,7 +442,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   /* action：{ label, fn }，提示条右边多一个按钮（比如「撤销」），停久一点 */
   function toast(msg, action) {
     var old = document.querySelector('.toast'); if (old) old.remove();
-    var t = h('div', { class: 'toast' + (action ? ' has-act' : '') + (S.view === 'form' ? ' at-top' : ''), role: 'status' }, [msg,
+    var t = h('div', { class: 'toast' + (action ? ' has-act' : '') + (S.view === 'form' ? ' at-top' : S.view === 'roster' && !action ? ' at-fab' : ''), role: 'status' }, [msg,
       action ? h('button', { class: 'toast-act', type: 'button', text: action.label, onclick: function () { clearTimeout(toastTimer); t.remove(); action.fn(); } }) : null]);
     document.body.appendChild(t);
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.remove(); }, action ? 4000 : 2600);
@@ -412,7 +465,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
   /* ---------- 首页：顶部只建一次，打字时不重建搜索框 ---------- */
   function mountHome() {
-    S.view = 'home'; refs = {};
+    S.view = 'home'; S.dial = false; refs = {};
     app.textContent = '';
     var search = h('input', { class: 'search', type: 'search', autocomplete: 'off', enterkeyhint: 'search', 'aria-label': '搜索' });
     search.value = S.q;
@@ -425,10 +478,117 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     app.appendChild(h('div', { class: 'bar gutter' }, [h('div', { class: 'wrap bar-in' }, [search, h('div', { class: 'seg', role: 'group', 'aria-label': '切换' }, [refs.tabRec, refs.tabScr])])]));
     refs.main = h('div', { class: 'wrap' });
     app.appendChild(h('main', { class: 'gutter' }, [refs.main]));
-    refs.fab = h('button', { class: 'fab', type: 'button', onclick: function () { openForm(null); }, text: '＋ 记一笔' });
+    refs.fab = fabButton(function () { if (S.dial) closeDial(); else openDial(); });
     app.appendChild(refs.fab);
-    syncHeader(); renderMain();
+    syncFab(); syncHeader(); renderMain();
   }
+
+  /* ---------- 「+」：点开弹出设置里填了名字的班；有名单进名单页，没名单直接记一笔；一个班都没填就直接记一笔 ---------- */
+  var PLUS_SVG = '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M13 5v16M5 13h16"/></svg>';
+  function fabButton(onclick) {
+    var b = h('button', { class: 'fab', type: 'button', onclick: onclick }, [h('i')]);
+    b.firstChild.innerHTML = PLUS_SVG;
+    return b;
+  }
+  /* 弹开时、在名单页上（它就是返回）画成「×」 */
+  function syncFab() {
+    var b = refs.fab; if (!b) return;
+    b.setAttribute('aria-expanded', String(S.view === 'roster' || S.dial));
+    b.setAttribute('aria-label', S.view === 'roster' ? '返回' : S.dial ? '收起' : '记一笔');
+  }
+  /* 设置里填了名字的班；i 是第几个班（名单按这个位置存） */
+  function myClasses() {
+    var out = [];
+    S.classes.forEach(function (c, i) { c = norm(c); if (c && c !== '其他' && !out.some(function (o) { return o.name === c; })) out.push({ name: c, i: i }); });
+    return out;
+  }
+  function reduceMotion() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  function openDial() {
+    var list = myClasses();
+    if (!list.length) { openForm(null); return; }
+    S.dial = true;
+    var n = list.length;
+    refs.mask = h('div', { class: 'dial-mask', onclick: function () { closeDial(); } });
+    /* --i：离「+」最近的先弹；--j：收回时从上往下 */
+    refs.dial = h('div', { class: 'dial', role: 'group', 'aria-label': '选班级' }, list.map(function (c, k) {
+      return h('button', { class: 'dial-item c' + (c.i + 1), type: 'button', style: '--i:' + (n - 1 - k) + ';--j:' + k, onclick: function () { pickClass(c); } }, [h('i'), c.name]);
+    }));
+    app.appendChild(refs.mask); app.appendChild(refs.dial);
+    syncFab();
+  }
+  function closeDial(now) {
+    if (!S.dial) return;
+    S.dial = false; syncFab();
+    var mask = refs.mask, dial = refs.dial; refs.mask = refs.dial = null;
+    if (now || reduceMotion()) { mask.remove(); dial.remove(); return; }
+    mask.classList.add('out'); dial.classList.add('out');
+    setTimeout(function () { mask.remove(); dial.remove(); }, 260);
+  }
+  function pickClass(c) {
+    closeDial(true);
+    if (hasRoster(c.i)) openRoster(c.i);
+    else openForm(null, { cls: c.name });
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && S.dial) closeDial(); });
+
+  /* ---------- 班级名单页（整页）：常客在前（次数多的在前，一样多看谁最近），其余按学号；最后一格「写名字」 ---------- */
+  function openRoster(i) {
+    if (S.view === 'home') S.scroll[S.tab] = window.scrollY;
+    S.roster = i; S.rosterScroll = 0;
+    mountRoster();
+    window.scrollTo(0, 0);
+  }
+  function closeRoster() {
+    S.roster = null;
+    mountHome();
+    window.scrollTo(0, S.scroll[S.tab] || 0);
+  }
+  /* 不写是哪个班、没有顶栏；右下角「×」返回首页 */
+  function mountRoster() {
+    S.view = 'roster'; refs = {};
+    app.textContent = '';
+    refs.main = h('div', { class: 'wrap' });
+    refs.rmain = h('main', { class: 'rmain gutter' }, [refs.main]);
+    app.appendChild(refs.rmain);
+    refs.fab = fabButton(closeRoster); app.appendChild(refs.fab); syncFab();
+    renderRoster();
+  }
+  /* 每个名字一共记了几次、最近一次的排序 key；和 nth() 一样按名字在所有记录里数（跟进中、已完成都算） */
+  function tally() {
+    var m = Object.create(null);
+    S.items.forEach(function (it) {
+      var nm = norm(it.student); if (!nm) return;
+      var k = itemKey(it), t = m[nm] || (m[nm] = { n: 0, last: '' });
+      t.n++; if (k > t.last) t.last = k;
+    });
+    return m;
+  }
+  function renderRoster() {
+    var m = refs.main, i = S.roster, r = S.rosters[i], cls = norm(S.classes[i]);
+    var names = r ? r.names : [], regs = r ? r.regulars : [], t = tally(), top = [], rest = [];
+    names.forEach(function (nm, k) { (regs.indexOf(nm) >= 0 ? top : rest).push({ nm: nm, k: k, t: t[nm] || { n: 0, last: '' } }); });
+    top.sort(function (a, b) { return b.t.n - a.t.n || (a.t.last < b.t.last ? 1 : a.t.last > b.t.last ? -1 : 0) || a.k - b.k; });
+    var grid = h('div', { class: 'rgrid', role: 'group', 'aria-label': cls + '名单' });
+    top.forEach(function (o) { grid.appendChild(nameCell(o.nm, true, o.t.n, function () { openForm(null, { student: o.nm, cls: cls }); })); });
+    rest.forEach(function (o) { grid.appendChild(nameCell(o.nm, false, 0, function () { openForm(null, { student: o.nm, cls: cls }); })); });
+    grid.appendChild(h('button', { class: 'rc add', type: 'button', onclick: function () { openForm(null, { cls: cls, focus: true }); } }, [h('span', { class: 'nm', text: '写名字' })]));
+    m.textContent = ''; m.appendChild(grid);
+    refs.grid = grid;
+    fitRoster();
+  }
+  /* 格子高度 = (屏幕剩下的高度 − 缝) ÷ 行数，32–60px；矮屏缝从 6px 收到 4px；还放不下才滑 */
+  function fitRoster() {
+    var g = refs.grid; if (!g || S.view !== 'roster') return;
+    var rows = Math.ceil(g.children.length / 5);
+    var top = g.getBoundingClientRect().top + window.scrollY;
+    var pb = parseFloat(getComputedStyle(refs.rmain).paddingBottom) || 0;
+    var room = window.innerHeight - top - pb;
+    function fit(gap) { return Math.floor((room - gap * (rows - 1)) / rows); }
+    var gap = fit(6) < 38 ? 4 : 6, cell = fit(gap);
+    g.style.setProperty('--rgap', gap + 'px');
+    g.style.setProperty('--cell-h', Math.max(32, Math.min(60, cell)) + 'px');
+  }
+  window.addEventListener('resize', fitRoster);
   function switchTab(t) {
     if (S.tab === t) return;
     S.scroll[S.tab] = window.scrollY;
@@ -481,7 +641,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     if (S.dbState === 'loading') {
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '翻本子中…' }), h('div', { text: '记过的事马上出来。' })]));
     } else if (S.dbState === 'ready' && !S.items.length) {
-      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「记一笔」，选好是哪种情况，话术会自动套上。' })]));
+      m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '本子还是空的' }), h('div', { text: '遇到事情，点右下角「+」记一笔，选好是哪种情况，话术会自动套上。' })]));
     } else if (searching && !shown.length) {
       m.appendChild(h('div', { class: 'empty' }, [h('div', { class: 'big', text: '没找到' }), h('div', { text: '换个字搜搜。' })]));
     } else if (S.items.length && !shown.length) {
@@ -653,10 +813,15 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
 
     if (!q) {
       var can = S.dbState === 'ready';
+      /* 每个班下面一个「名单」按钮，整页切到这个班的名单（粘贴名单、标常客）；班名没填时点不了 */
+      var rosBtns = [0, 1, 2].map(function (i) {
+        return h('button', { class: 'btn', type: 'button', disabled: !can || !norm(S.classes[i]), onclick: function () { openRosterEdit(i); },
+          text: hasRoster(i) ? '名单 ' + S.rosters[i].names.length + ' 人' : '导名单' });
+      });
       var clsInputs = [0, 1, 2].map(function (i) {
         var el = h('input', { class: 'input', type: 'text', placeholder: '班级 ' + (i + 1), 'aria-label': '第 ' + (i + 1) + ' 个班', autocomplete: 'off', enterkeyhint: 'done', disabled: !can });
         el.value = S.classes[i];
-        el.addEventListener('input', function () { S.classes[i] = el.value; saveSettings(); });
+        el.addEventListener('input', function () { S.classes[i] = el.value; rosBtns[i].disabled = !can || !norm(el.value); saveSettings(); });
         el.addEventListener('blur', flushSettings);
         el.addEventListener('keydown', function (e) { if (e.key === 'Enter') el.blur(); });
         return el;
@@ -669,45 +834,51 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
           h('output', { text: String(E) }),
           h('button', { type: 'button', 'aria-label': '多一次', disabled: !can || E >= 6, text: '+', onclick: function () { setEscalate(E + 1); } })
         ])]),
-        h('div', { class: 'set-part' }, [h('span', { text: '我的三个班' }), h('div', { class: 'cls-inputs' }, clsInputs)]),
+        h('div', { class: 'set-part' }, [h('span', { text: '我的三个班' }), h('div', { class: 'cls-inputs' }, clsInputs), h('div', { class: 'cls-inputs ros-btns' }, rosBtns)]),
         h('div', { class: 'set-part btn-row' }, [
           h('button', { class: 'btn', type: 'button', disabled: !can, text: '导出备份', onclick: exportBackup }),
           h('label', { class: 'btn' + (can ? '' : ' off') }, [fileIn, '导入'])
         ]),
-        h('div', { class: 'fine', text: '记录只存在这台设备上，不上传，别人打开网址看不到。换手机前先导出备份；导入只加不删。' })
+        h('div', { class: 'fine', text: '记录和名单只存在这台设备上，不上传，别人打开网址看不到。换手机前先导出备份；导入只加不删。' })
       ])]));
     }
   }
 
   /* 设置连着改只存最后一下，同一时间只写一次；每次把所有设置一起存。离开输入框、切走页面马上存 */
-  var setTimer = null, setWriting = false, setPending = false;
+  var setTimer = null, setWriting = false, setPending = false, setPromise = Promise.resolve();
   function settingsBusy() { return !!setTimer || setWriting; }
   function setEscalate(n) { S.escalateAt = n; renderMain(); saveSettings(); }
   function saveSettings() {
     clearTimeout(setTimer);
     setTimer = setTimeout(function () { setTimer = null; writeSettings(); }, 500);
   }
-  function flushSettings() { if (setTimer) { clearTimeout(setTimer); setTimer = null; writeSettings(); } }
+  function flushSettings() {
+    if (setTimer) { clearTimeout(setTimer); setTimer = null; writeSettings(); }
+    return setPromise;
+  }
   document.addEventListener('visibilitychange', function () { if (document.hidden) flushSettings(); });
   function writeSettings() {
-    if (!S.db) return;
-    if (setWriting) { setPending = true; return; }
+    if (!S.db) return setPromise;
+    if (setWriting) { setPending = true; return setPromise; }
     setWriting = true; S.settingsAt = Date.now();
-    S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt })
+    setPromise = S.db.doc('settings/main').set({ escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt })
       .catch(function (e) { toast(errText(e)); })
       .then(function () {
         setWriting = false;
-        if (setPending) { setPending = false; writeSettings(); }
+        if (setPending) { setPending = false; return writeSettings(); }
       });
+    return setPromise;
   }
 
   /* ---------- 备份：导出一个 JSON（iPhone 走分享面板，能「存储到文件」；别处直接下载）；
      导入按 id 合并：没有的加上，同一个 id 留 updatedAt 新的那份，不删已有的 ---------- */
   function exportBackup() {
+    var rosters = {}, nr = 0;
+    S.rosters.forEach(function (r, i) { if (r) { rosters['roster' + (i + 1)] = r; nr++; } });
     var data = { app: 'class-log', version: 1, exportedAt: new Date().toISOString(),
-      settings: { escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt }, incidents: S.items };
+      settings: { escalateAt: S.escalateAt, classes: S.classes.map(norm), updatedAt: S.settingsAt }, rosters: rosters, incidents: S.items };
     var file = new File([JSON.stringify(data, null, 1)], '小本本备份-' + today() + '.json', { type: 'application/json' });
-    var done = '导出了 ' + S.items.length + ' 条';
+    var done = '导出了 ' + S.items.length + ' 条' + (nr ? '和 ' + nr + ' 份名单' : '');
     if (matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [file] })) {
       navigator.share({ files: [file] }).then(function () { toast(done); }, function (e) { if (!e || e.name !== 'AbortError') download(file); });
       return;
@@ -720,60 +891,273 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
     setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
   }
   function str(v) { return v == null ? '' : String(v); }
+  function stamp(v) { var n = +v; return Number.isFinite(n) && n > 0 ? n : 0; }
   function cleanItem(x) {
     return { student: norm(x.student), cls: str(x.cls), type: str(x.type), date: /^\d{4}-\d\d-\d\d$/.test(x.date) ? x.date : '',
-      what: str(x.what), did: str(x.did), result: str(x.result), done: !!x.done, createdAt: +x.createdAt || 0, updatedAt: +x.updatedAt || 0 };
+      what: str(x.what), did: str(x.did), result: str(x.result), done: !!x.done, createdAt: stamp(x.createdAt), updatedAt: stamp(x.updatedAt) };
   }
   function importBackup(file) {
     file.text().then(function (text) {
       var o; try { o = JSON.parse(text); } catch (e) { o = null; }
       if (!o || o.app !== 'class-log' || !Array.isArray(o.incidents)) { toast('这不是小本本的备份文件'); return; }
-      var have = Object.create(null), r = { added: 0, updated: 0, same: 0 }, b = S.db.batch();
-      S.items.forEach(function (it) { have[it.id] = it; });
-      o.incidents.forEach(function (x) {
-        if (!x || typeof x.id !== 'string' || !x.id) return;
-        var d = cleanItem(x), old = have[x.id];
-        if (!old) r.added++;
-        else if (d.updatedAt > (+old.updatedAt || 0)) r.updated++;
-        else { r.same++; return; }
-        have[x.id] = d; b.set(S.db.doc('incidents/' + x.id), d);
-      });
-      var st = o.settings;
-      if (st && +st.updatedAt > S.settingsAt && !settingsBusy()) {
-        var v = +st.escalateAt;
-        b.set(S.db.doc('settings/main'), { escalateAt: v >= 2 && v <= 6 ? v : 3, updatedAt: +st.updatedAt,
-          classes: [0, 1, 2].map(function (i) { return Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }) });
-      }
-      return b.commit().then(function () {
+      return flushSettings().then(function () { return S.db.importBackup(o); }).then(function (r) {
         var parts = [];
         if (r.added) parts.push('新加 ' + r.added + ' 条');
         if (r.updated) parts.push('更新 ' + r.updated + ' 条');
         if (r.same) parts.push(r.same + ' 条本来就有');
+        if (r.rosters) parts.push('名单 ' + r.rosters + ' 份');
+        if (r.miss) parts.push('有 ' + r.miss + ' 份名单班名对不上，没导');
+        if (r.keptClasses) parts.push('已保留本机名单对应的班级');
         toast('导入好了' + (parts.length ? '：' + parts.join('，') : ''));
       });
     }).catch(function (e) { toast(errText(e)); });
+  }
+
+  /* 在同一个读写事务里用库里的最新值合并，不能拿页面缓存决定谁覆盖谁。
+     名单只合并：新的那份定顺序和共有名字的常客标记，另一份独有的人追加在后面。 */
+  function mergeRoster(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    var first = b.updatedAt > a.updatedAt ? b : a, other = first === b ? a : b;
+    var extra = other.names.filter(function (n) { return first.names.indexOf(n) < 0; });
+    return { names: first.names.concat(extra), regulars: first.regulars.concat(other.regulars.filter(function (n) { return extra.indexOf(n) >= 0; })),
+      updatedAt: Math.max(a.updatedAt, b.updatedAt) };
+  }
+  function backupPlan(o, have, cfg) {
+    var ops = [], result = { added: 0, updated: 0, same: 0, rosters: 0, miss: 0, keptClasses: false };
+    function put(col, id, d) { ops.push([col, id, d]); }
+    function cls(st) { return [0, 1, 2].map(function (i) { return st && Array.isArray(st.classes) ? norm(st.classes[i]) : ''; }); }
+    function unique(a, c) { return !!c && a.indexOf(c) === a.lastIndexOf(c); }
+    o.incidents.forEach(function (x) {
+      if (!x || typeof x.id !== 'string' || !x.id) return;
+      var d = cleanItem(x), old = have[x.id];
+      if (!old) result.added++;
+      else if (d.updatedAt > stamp(old.updatedAt)) result.updated++;
+      else { result.same++; return; }
+      have[x.id] = d; put('incidents', x.id, d);
+    });
+    var main = cfg.main, st = o.settings, oldCls = cls(main), nextCls = oldCls;
+    var old = [1, 2, 3].map(function (i) { return cleanRoster(cfg['roster' + i]); }), next = old.slice();
+    if (st && (!main || stamp(st.updatedAt) > stamp(main.updatedAt))) {
+      nextCls = Array.isArray(st.classes) ? cls(st) : oldCls;
+      if (JSON.stringify(nextCls) !== JSON.stringify(oldCls)) {
+        var canMove = old.every(function (r, i) { return !r || !r.names.length || (unique(oldCls, oldCls[i]) && unique(nextCls, oldCls[i]) && nextCls.indexOf(oldCls[i]) >= 0); });
+        if (canMove) next = nextCls.map(function (c) { var i = c ? oldCls.indexOf(c) : -1; return i >= 0 ? old[i] : null; });
+        else { nextCls = oldCls; result.keptClasses = true; }
+      }
+      var v = +st.escalateAt;
+      put('settings', 'main', { escalateAt: v >= 2 && v <= 6 ? v : 3, classes: nextCls, updatedAt: stamp(st.updatedAt) });
+    }
+    var ro = o.rosters && typeof o.rosters === 'object' ? o.rosters : {};
+    var bkCls = st && Array.isArray(st.classes) ? cls(st) : null;
+    [0, 1, 2].forEach(function (j) {
+      var d = cleanRoster(ro['roster' + (j + 1)]);
+      if (!d || !d.names.length) return;
+      var c = bkCls && bkCls[j], i = -1;
+      if (bkCls && JSON.stringify(bkCls) === JSON.stringify(nextCls) && c) i = j;
+      else if (bkCls && unique(bkCls, c) && unique(nextCls, c)) i = nextCls.indexOf(c);
+      if (i < 0) { result.miss++; return; }
+      next[i] = mergeRoster(next[i], d);
+    });
+    next.forEach(function (d, i) {
+      var before = old[i];
+      if (!d && !before) return;
+      d = d || { names: [], regulars: [], updatedAt: 0 };
+      if (before && JSON.stringify([d.names, d.regulars]) === JSON.stringify([before.names, before.regulars]) && d.updatedAt <= before.updatedAt) return;
+      /* 换位置也向前走，位置上晚到的旧快照不能盖回刚合并的名单。 */
+      d = { names: d.names, regulars: d.regulars, updatedAt: Math.max(Date.now(), d.updatedAt, before ? before.updatedAt : 0) + 1 };
+      put('settings', 'roster' + (i + 1), d); result.rosters++;
+    });
+    return { ops: ops, result: result };
+  }
+
+  /* ---------- 名单：设置里第几个班就存 settings/rosterN（N = 1/2/3，改班名不丢名单）；
+     每份 = { names: [按学号顺序], regulars: [常客名字], updatedAt }。记录照旧按名字数，名单不动记录 ---------- */
+  var HEAD_WORDS = ['姓名', '名字', '学生', '学生姓名', '学号', '序号', '编号', '名单'];
+  /* 名字整理：去掉看不见的字符，多个空格（全角空格也算，norm 里的 \s 管）合成一个；每段都是单个汉字的去掉中间空格（Excel 里两个字的名字常在中间塞个全角空格对齐） */
+  function cleanName(s) {
+    var t = norm(String(s == null ? '' : s).replace(/[\u200b-\u200d\u2060\ufeff]/g, ''));
+    return /^[㐀-鿿](?: [㐀-鿿])+$/.test(t) ? t.replace(/ /g, '') : t;
+  }
+  /* 不是名字的词：纯数字（学号）、班级（「3班」「高一(3)班」「七年级」：带数字、以「班 / 级」结尾）、性别 */
+  var NOT_NAME = /^\d+$|^\S*[\d一二三四五六七八九十]\S*[班级]$|^[男女]$/;
+  /* 一格里用空格隔开好几样（从微信、PDF 复制的「名字 男」「3班 名字」）：有汉字时按空格切，取第一个是名字的词 */
+  function firstWord(t) {
+    var w = (/[㐀-鿿]/.test(t) ? t.split(' ') : [t]).filter(function (x) { return x && !NOT_NAME.test(x); });
+    return w.length ? w[0] : '';
+  }
+  /* 一格 → 名字：先把班级、学号、性别那几样拿掉（「3班」的 3 别当学号去掉），再去掉开头的学号（「01 名字」「1.名字」） */
+  function cellName(c) {
+    var t = cleanName(c).split(' ').filter(function (x) { return !NOT_NAME.test(x); }).join(' ');
+    return firstWord(cleanName(t.replace(/^\s*(?:[(（[【]?\d+\s*[.、．,，:：)）\]】-]?|[①-⑳])\s*/, '')));
+  }
+  /* 粘进来的名单 → 名字：一行一个，顺序就是学号；全角数字先换成半角；
+     两列以上（Tab 隔开）一行一个人，取第一个是名字的格子；没有 Tab 的行里用「、，,」隔开的，一段一个人；
+     空行、表头跳过；重复的只留第一次 */
+  function parseRoster(text) {
+    var names = [], dup = 0;
+    function add(nm) {
+      if (!nm || HEAD_WORDS.indexOf(nm) >= 0 || /姓名|学号/.test(nm)) return;
+      if (names.indexOf(nm) >= 0) { dup++; return; }
+      names.push(nm);
+    }
+    String(text || '').replace(/[\uff10-\uff19]/g, function (d) { return String.fromCharCode(d.charCodeAt(0) - 0xfee0); }).split(/\r\n|\r|\n/).forEach(function (line) {
+      var cells = line.split('\t'), nm = '';
+      if (cells.length > 1) { for (var i = 0; i < cells.length && !nm; i++) nm = cellName(cells[i]); add(nm); return; }
+      (/[㐀-鿿]/.test(line) ? line.split(/[、，,]/) : [line]).forEach(function (seg) { add(cellName(seg)); });
+    });
+    return { names: names, dup: dup };
+  }
+  function cleanRoster(x) {
+    if (!x || !Array.isArray(x.names)) return null;
+    var names = [], regs = [];
+    x.names.forEach(function (n) { n = cleanName(n); if (n && names.indexOf(n) < 0) names.push(n); });
+    (Array.isArray(x.regulars) ? x.regulars : []).forEach(function (n) { n = cleanName(n); if (names.indexOf(n) >= 0 && regs.indexOf(n) < 0) regs.push(n); });
+    return { names: names, regulars: regs, updatedAt: stamp(x.updatedAt) };
+  }
+  function hasRoster(i) { return !!(S.rosters[i] && S.rosters[i].names.length); }
+  /* 先改本地再写；updatedAt 一次比一次大，晚到的旧快照不会盖掉刚点的 */
+  function writeRoster(i, names, regulars) {
+    var old = S.rosters[i], d = { names: names, regulars: regulars, updatedAt: Math.max(Date.now(), (old ? old.updatedAt : 0) + 1) };
+    S.rosters[i] = d;
+    return S.db.doc('settings/roster' + (i + 1)).set(d).catch(function (e) {
+      if (S.rosters[i] === d) S.rosters[i] = old;
+      onRoster(); throw e;
+    });
+  }
+  /* 名单变了：名单页、设置里的名单页、设置（没在打字时）跟着变 */
+  function onRoster() {
+    if (S.view === 'roster') renderRoster();
+    else if (S.view === 'rosterEdit') renderRosterEdit();
+    else if (S.view === 'home' && S.tab === 'scripts') {
+      var a = document.activeElement;
+      if (!(a && a.tagName === 'INPUT' && refs.main && refs.main.contains(a))) renderMain();
+    }
+  }
+  /* 一格一个名字：四个字、五个字的字小一号，六个字以上折成两行；reg = 常客；n = 记过几次（0 不显示）；pressable = 设置里点一下切换常客 */
+  function nameCell(nm, reg, n, onclick, pressable) {
+    var ch = Array.from(nm), len = ch.length, cut = Math.floor(len / 2);
+    return h('button', { class: 'rc' + (reg ? ' reg' : '') + (n ? ' has-k' : '') + (len >= 6 ? ' l6' : len === 5 ? ' l5' : len === 4 ? ' l4' : ''), type: 'button', onclick: onclick,
+      'aria-pressed': pressable ? String(reg) : null, 'aria-label': nm + (reg ? '，常客' : '') + (n ? '，记过 ' + n + ' 次' : '') }, [
+      len >= 6 ? h('span', { class: 'nm' }, [ch.slice(0, cut).join(''), h('br'), ch.slice(cut).join('')]) : h('span', { class: 'nm', text: nm }),
+      n ? h('span', { class: 'k', text: String(n) }) : null
+    ]);
+  }
+
+  /* ---------- 设置里的名单页（整页）：上面点名字标常客（一点就存），下面粘贴名单 ---------- */
+  function openRosterEdit(i) {
+    S.scroll[S.tab] = window.scrollY;
+    S.rosterEdit = { i: i, text: '', armed: false };
+    mountRosterEdit();
+    window.scrollTo(0, 0);
+  }
+  function closeRosterEdit() {
+    S.rosterEdit = null;
+    mountHome();
+    window.scrollTo(0, S.scroll[S.tab] || 0);
+  }
+  /* 返回：第一次导入就顺手存；要替换已有名单时不替人做主，再点一次才算不要 */
+  function backRosterEdit() {
+    var e = S.rosterEdit;
+    if (!parseRoster(e.text).names.length) { closeRosterEdit(); return; }
+    if (!hasRoster(e.i)) { applyRoster(true); return; }
+    if (e.armed) { closeRosterEdit(); return; }
+    e.armed = true;
+    toast('粘贴的名单还没用上。再点一次「返回」就不要了');
+    setTimeout(function () { if (S.rosterEdit === e) e.armed = false; }, 4000);
+  }
+  function mountRosterEdit() {
+    var e = S.rosterEdit;
+    S.view = 'rosterEdit'; refs = {};
+    var oldToast = document.querySelector('.toast'); if (oldToast) oldToast.remove();
+    app.textContent = '';
+    app.appendChild(h('header', { class: 'formbar gutter' }, [h('div', { class: 'wrap formbar-in' }, [
+      h('button', { class: 'back', type: 'button', onclick: backRosterEdit, text: '‹ 返回' }), h('h1', { text: (norm(S.classes[e.i]) || '班级 ' + (e.i + 1)) + '名单' }), h('span')
+    ])]));
+    var m = h('div', { class: 'wrap' });
+    app.appendChild(h('main', { class: 'gutter' }, [m]));
+    refs.regs = h('div');
+    m.appendChild(refs.regs);
+    var ta = h('textarea', { class: 'ta', id: 'r-paste', rows: '3', placeholder: '01 名字\n02 名字\n……', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+    ta.value = e.text;
+    ta.addEventListener('input', function () { e.text = ta.value; e.armed = false; grow(ta); renderPasteNote(); });
+    refs.paste = ta;
+    refs.pnote = h('div', { class: 'pnote', 'aria-live': 'polite' });
+    refs.apply = h('button', { class: 'btn primary', type: 'button', onclick: function () { applyRoster(false); } });
+    m.appendChild(h('div', { class: 'field' }, [
+      h('label', { for: 'r-paste' }, ['粘贴名单', h('span', { class: 'hint', text: 'Excel 里复制名字那一列' })]),
+      ta, refs.pnote, refs.apply
+    ]));
+    m.appendChild(h('div', { class: 'fine', text: '一行一个名字，顺序就是学号；前面带学号也行，重复的会去掉。换名单不动已经记过的事，还在新名单里的人常客标记留着。' }));
+    renderRosterEdit(); grow(ta);
+  }
+  function renderRosterEdit() {
+    var e = S.rosterEdit, r = S.rosters[e.i], box = refs.regs;
+    box.textContent = '';
+    if (hasRoster(e.i)) {
+      box.appendChild(h('div', { class: 'reg-head' }, [h('span', { text: '点名字标成常客，再点一下取消' }), h('b', { text: '常客 ' + r.regulars.length + ' / ' + r.names.length + ' 人' })]));
+      box.appendChild(h('div', { class: 'rgrid edit', role: 'group', 'aria-label': '标常客' }, r.names.map(function (nm) {
+        return nameCell(nm, r.regulars.indexOf(nm) >= 0, 0, function () { toggleRegular(e.i, nm); }, true);
+      })));
+    }
+    renderPasteNote();
+  }
+  function renderPasteNote() {
+    var e = S.rosterEdit; if (!e || !refs.pnote) return;
+    var p = parseRoster(e.text), n = p.names.length, have = hasRoster(e.i) ? S.rosters[e.i].names.length : 0;
+    refs.pnote.hidden = !e.text.trim();
+    refs.pnote.textContent = !n ? '没认出名字：一行一个名字，前面带学号也行。'
+      : '认出 ' + n + ' 人：' + p.names.slice(0, 3).join('、') + (n > 4 ? ' … ' + p.names[n - 1] : n === 4 ? '、' + p.names[3] : '') + (p.dup ? '（去掉 ' + p.dup + ' 个重复）' : '');
+    /* 认出名字、而且已经有名单时才说「替换」；没粘贴、没认出时只写「用这份名单」并点不了 */
+    refs.apply.disabled = !n;
+    refs.apply.textContent = n && have ? '用这份名单（替换现在的 ' + have + ' 人）' : '用这份名单';
+  }
+  function toggleRegular(i, nm) {
+    var r = S.rosters[i]; if (!r || !S.db) return;
+    var on = r.regulars.indexOf(nm) >= 0;
+    writeRoster(i, r.names, on ? r.regulars.filter(function (x) { return x !== nm; }) : r.regulars.concat([nm])).catch(function (e) { toast(errText(e)); });
+    renderRosterEdit();
+  }
+  function applyRoster(leaving) {
+    var e = S.rosterEdit, p = parseRoster(e.text);
+    if (!p.names.length || !S.db) return;
+    var old = S.rosters[e.i], keep = old ? old.regulars.filter(function (nm) { return p.names.indexOf(nm) >= 0; }) : [];
+    var msg = (old && old.names.length ? '名单换好了：' : '名单存好了：') + p.names.length + ' 人' + (keep.length ? '，常客留着 ' + keep.length + ' 个' : '');
+    refs.apply.disabled = true;
+    writeRoster(e.i, p.names, keep).then(function () {
+      if (S.rosterEdit !== e) return;
+      if (leaving) { closeRosterEdit(); toast(msg); return; }
+      e.text = ''; refs.paste.value = ''; grow(refs.paste);
+      renderRosterEdit(); window.scrollTo(0, 0); toast(msg);
+    }, function (err) { toast(errText(err)); if (S.rosterEdit === e) renderPasteNote(); });
   }
 
   /* ---------- 记一笔（整页） ---------- */
   function blankForm() { return { id: null, student: '', cls: '', type: '', date: today(), what: '', did: '', result: '', done: false, createdAt: 0, autoDid: '' }; }
   function formSig(f) { return JSON.stringify([norm(f.student), f.cls, f.type, f.date, f.what.trim(), f.did.trim(), f.result.trim(), !!f.done]); }
 
-  function openForm(it) {
+  /* preset：从名单页 / 「+」进来时先填好 { student, cls }，focus 为 true 就直接打开键盘写名字 */
+  function openForm(it, preset) {
     if (S.view === 'home') S.scroll[S.tab] = window.scrollY;
     else if (S.view === 'person') S.personScroll = window.scrollY;
+    else if (S.view === 'roster') S.rosterScroll = window.scrollY;
     var f = blankForm();
     if (it) {
       f.id = it.id; f.student = it.student || ''; f.cls = it.cls || ''; f.type = it.type || '';
       f.date = it.date || today(); f.what = it.what || ''; f.did = it.did || ''; f.result = it.result || '';
       f.done = !!it.done; f.createdAt = it.createdAt || 0;
+    } else if (preset) {
+      f.student = preset.student || ''; f.cls = preset.cls || '';
     }
     S.form = f; S.formInit = formSig(f); S.backArmed = false; S.delArmed = false; S.saving = false;
     mountForm();
     window.scrollTo(0, 0);
+    if (preset && preset.focus) refs.student.focus();
   }
 
   function closeForm(showNew) {
     S.form = null;
+    if (S.roster != null) { mountRoster(); window.scrollTo(0, S.rosterScroll || 0); return; }
     if (S.person && !showNew) { mountPerson(); window.scrollTo(0, S.personScroll || 0); return; }
     S.person = null;
     if (showNew) { S.tab = 'records'; S.filter = 'all'; S.showDone = false; S.q = ''; S.scroll.records = 0; }
@@ -985,6 +1369,7 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
   function onData() {
     if (S.view === 'home') { syncHeader(); renderMain(); }
     else if (S.view === 'person') renderPerson();
+    else if (S.view === 'roster') renderRoster();
     else if (S.view === 'form' && S.form) { renderStudents(); renderSuggest(); }
   }
 
@@ -1069,6 +1454,24 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
         return { doc: function (id) { return ref(col, id || newId()); }, onSnapshot: function (fn, err) { return listen(col, null, fn, err); } };
       },
       doc: function (path) { var i = path.indexOf('/'); return ref(path.slice(0, i), path.slice(i + 1)); },
+      importBackup: function (o) {
+        var plan, failed;
+        return tx(['incidents', 'settings'], 'readwrite', function (t) {
+          var data = { incidents: Object.create(null), settings: Object.create(null) }, pending = 2;
+          ['incidents', 'settings'].forEach(function (col) {
+            t.objectStore(col).openCursor().onsuccess = function (e) {
+              var c = e.target.result;
+              if (c) { data[col][c.key] = c.value; c.continue(); return; }
+              if (--pending) return;
+              try {
+                plan = backupPlan(o, data.incidents, data.settings);
+                plan.ops.forEach(function (p) { t.objectStore(p[0]).put(p[2], p[1]); });
+              } catch (err) { failed = err; t.abort(); }
+            };
+          });
+        }).then(function () { return changed(['incidents', 'settings']); }, function (e) { throw failed || e; })
+          .then(function () { return plan.result; });
+      },
       /* 好几条一次写完（导入用），写完每个集合只通知一次 */
       batch: function () {
         var ops = [];
@@ -1111,6 +1514,14 @@ main { padding-top: 14px; padding-bottom: calc(120px + env(safe-area-inset-botto
       var cls = [0, 1, 2].map(function (i) { return d && Array.isArray(d.classes) && d.classes[i] ? String(d.classes[i]) : ''; });
       if (next !== S.escalateAt || cls.join('\n') !== S.classes.join('\n')) { S.escalateAt = next; S.classes = cls; onData(); }
     }, function () {});
+    [0, 1, 2].forEach(function (i) {
+      db.doc('settings/roster' + (i + 1)).onSnapshot(function (snap) {
+        var d = snap.exists ? cleanRoster(snap.data()) : null, mine = S.rosters[i];
+        if (d && mine && d.updatedAt < mine.updatedAt) return;
+        if (JSON.stringify(d) === JSON.stringify(mine)) return;
+        S.rosters[i] = d; onRoster();
+      }, function () {});
+    });
   })();
 })();
 </script>
